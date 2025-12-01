@@ -4,9 +4,11 @@ import bcrypt from "bcrypt";
 const hashedAdminPassword = await bcrypt.hash("adminpassword", 10);
 sequelize.query(`
     INSERT INTO users (fullname, email, password, role, actif) VALUES
-    ('Admin User', 'admin', $1, 'admin', true)
+    ('Admin User', 'admin@quizzeo.fr', :password, 'admin', true)
     `,
-    [hashedAdminPassword]
+    {
+        replacements: { password: hashedAdminPassword }
+    }
 ).then(() => {
     console.log("Admin account created.");
 }).catch((err) => {

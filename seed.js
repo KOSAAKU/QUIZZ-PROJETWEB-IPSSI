@@ -1,5 +1,5 @@
 import { sequelize } from "./config/database.js";
-import { DataTypes, Model, Op } from "sequelize";
+import { DataTypes, Model } from "sequelize";
 
 class User extends Model {}; 
 User.init({
@@ -103,13 +103,3 @@ Reponses.init({
     sequelize,
     modelName: "Reponses"
 });
-
-export function syncDatabase() {
-    return sequelize.sync({ alter: true })
-    .then(() => {
-        console.log("Database synchronized.");
-    })
-    .catch((err) => {
-        console.error("Error synchronizing database:", err);
-    });
-}
