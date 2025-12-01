@@ -17,5 +17,12 @@
   "scripts": {
     "test": "npm test",
     "start": "node server.js"
+  },
+  "dependencies": {
+    "@sequelize/core": "^7.0.0-alpha.47",
+    "@sequelize/mysql": "^7.0.0-alpha.47",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "sequelize": "^6.37.7"
   }
 }
