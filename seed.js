@@ -41,7 +41,7 @@ User.init({
     modelName: "User"
 });
 
-class Quiz extends Models {}; 
+class Quizz extends Models {}; 
 Quiz.init({
     id: {
         type: DataTypes.INTEGER,
@@ -72,7 +72,7 @@ Quiz.init({
     }
 }, {
     sequelize,
-    modelName: "Quiz"
+    modelName: "Quizz"
 });
 
 class Reponses extends Models {}; 
