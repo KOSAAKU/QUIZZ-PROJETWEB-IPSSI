@@ -3,7 +3,7 @@ import bcrypt from "bcrypt";
 
 const hashedAdminPassword = await bcrypt.hash("adminpassword", 10);
 sequelize.query(`
-    INSERT INTO users (fullname, username, password, role, actif) VALUES
+    INSERT INTO users (fullname, email, password, role, actif) VALUES
     ('Admin User', 'admin', $1, 'admin', true)
     `,
     [hashedAdminPassword]
