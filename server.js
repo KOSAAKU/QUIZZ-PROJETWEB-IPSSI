@@ -1,25 +1,21 @@
 import express from 'express';
 const app = express();
 
-import { Sequelize } from '@sequelize/core';
-import { MySqlDialect } from '@sequelize/mysql';
-
-import dotenv from 'dotenv';
-dotenv.config();
-
-const sequelize = new Sequelize({
-  dialect: MySqlDialect,
-  database: process.env.DB_NAME,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  host: process.env.DB_HOST,
-  port: parseInt(process.env.DB_PORT, 10),
-});
+import { sequelize } from './config/database.js';
+import { syncDatabase } from './seed.js';
 
 // connect to the database
 sequelize.authenticate()
-  .then(() => console.log('Connection established successfully.'))
+  .then(() => {
+    console.log('Connection established successfully.');
+  })
   .catch(err => console.error('Unable to connect:', err));
+
+sequelize.sync()
+  .then(() => {
+    console.log('Database synchronized.');
+  })
+  .catch(err => console.error('Error synchronizing database:', err));
 
 // Start the server
 app.listen(3000, () => {
