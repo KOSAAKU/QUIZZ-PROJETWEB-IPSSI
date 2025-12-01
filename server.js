@@ -16,6 +16,7 @@ const sequelize = new Sequelize({
   port: parseInt(process.env.DB_PORT, 10),
 });
 
+// connect to the database
 sequelize.authenticate()
   .then(() => console.log('Connection established successfully.'))
   .catch(err => console.error('Unable to connect:', err));
@@ -23,4 +24,23 @@ sequelize.authenticate()
 // Start the server
 app.listen(3000, () => {
   console.log('Server is running on port 3000');
+});
+
+
+
+
+app.get('/', (req, res) => {
+  res.send('Hello World!');
+});
+
+app.get('/login', (req, res) => {
+  res.send('Login Page');
+});
+
+app.get('/register', (req, res) => {
+  res.send('Register Page');
+});
+
+app.get('/dashboard', (req, res) => {
+  res.send('Dashboard Page');
 });
