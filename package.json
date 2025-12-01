@@ -1,0 +1,21 @@
+{
+  "name": "quizz-projetweb-ipssi",
+  "version": "1.0.0",
+  "description": "quizz app for IPSSI project",
+  "homepage": "https://github.com/KOSAAKU/QUIZZ-PROJETWEB-IPSSI#readme",
+  "bugs": {
+    "url": "https://github.com/KOSAAKU/QUIZZ-PROJETWEB-IPSSI/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/KOSAAKU/QUIZZ-PROJETWEB-IPSSI.git"
+  },
+  "license": "ISC",
+  "author": "",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "test": "npm test",
+    "start": "node server.js"
+  }
+}
