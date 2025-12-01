@@ -1,4 +1,4 @@
-import { sequelize } from '../server.js';
+import { sequelize } from '../config/database.js';
 import bcrypt from 'bcrypt';
 
 export async function registerUser(fullname, username, password, role, actif) {

@@ -7,6 +7,7 @@ app.use(express.urlencoded({ extended: true }));
 
 import { sequelize } from './config/database.js';
 import { loginUser } from './controllers/AuthController.js';
+import { registerUser } from './controllers/UserController.js';
 
 // Fonction async pour initialiser la base de données
 async function initDatabase() {
@@ -34,11 +35,49 @@ app.get('/login', (req, res) => {
 });
 
 app.get('/register', (req, res) => {
-  res.send('Register Page');
+  res.sendFile('public/register.html', { root: '.' });
 });
 
 app.get('/dashboard', (req, res) => {
-  res.send('Dashboard Page');
+  res.sendFile('public/dashboard.html', { root: '.' });
+});
+
+app.post('/register', async (req, res) => {
+    try {
+        const { fullname, email, password } = req.body;
+
+        if (!fullname || !email || !password) {
+            return res.status(400).json({
+                error: 'Validation error',
+                message: 'Fullname, email and password are required (send JSON body with Content-Type: application/json)'
+            });
+        }
+        // Check if user already exists
+        const [existingUsers] = await sequelize.query(
+            'SELECT * FROM users WHERE email = :email',
+            {
+                replacements: { email }
+            }
+        );
+        if (existingUsers.length > 0) {
+            return res.status(409).json({
+                error: 'User already exists',
+                message: 'An account with this email already exists'
+            });
+        }
+        // Register new user
+        await registerUser(fullname, email, password, 'user', true);
+
+        return res.status(201).json({
+            message: 'User registered successfully'
+        });
+    } catch (error) {
+        console.error('Registration error:', error);
+        return res.status(500).json({
+            error: 'Internal server error',
+            message: error.message
+        });
+    }
 });
 
 app.post('/login', async (req, res) => {
@@ -54,8 +93,13 @@ app.post('/login', async (req, res) => {
         }
 
         const user = await loginUser(email, password);
+        const { fullname, email: userEmail, token } = user || {};
 
         if (user) {
+            res.cookie('fullname', JSON.stringify(fullname), { httpOnly: true });
+            res.cookie('email', JSON.stringify(userEmail), { httpOnly: true });
+            res.cookie('token', JSON.stringify(token), { httpOnly: true });
+
             return res.status(200).json({
                 message: 'Login successful',
                 user: user
