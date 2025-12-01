@@ -1,7 +1,7 @@
-import { sequelize } from "./server.js";
-import { DataTypes, Models, Op} from "sequelize";
+import { sequelize } from "./config/database.js";
+import { DataTypes, Model, Op } from "sequelize";
 
-class User extends Models {}; 
+class User extends Model {}; 
 User.init({
     id: {
         type: DataTypes.INTEGER,
@@ -41,8 +41,8 @@ User.init({
     modelName: "User"
 });
 
-class Quizz extends Models {}; 
-Quiz.init({
+class Quizz extends Model {}; 
+Quizz.init({
     id: {
         type: DataTypes.INTEGER,
         autoIncrement: true,
@@ -75,7 +75,7 @@ Quiz.init({
     modelName: "Quizz"
 });
 
-class Reponses extends Models {}; 
+class Reponses extends Model {}; 
 Reponses.init({
     id: {
         type: DataTypes.INTEGER,
@@ -103,3 +103,13 @@ Reponses.init({
     sequelize,
     modelName: "Reponses"
 });
+
+export function syncDatabase() {
+    return sequelize.sync({ alter: true })
+    .then(() => {
+        console.log("Database synchronized.");
+    })
+    .catch((err) => {
+        console.error("Error synchronizing database:", err);
+    });
+}
