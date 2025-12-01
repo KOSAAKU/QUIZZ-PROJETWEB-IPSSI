@@ -103,13 +103,3 @@ Reponses.init({
     sequelize,
     modelName: "Reponses"
 });
-
-export function syncDatabase() {
-    return sequelize.sync({ alter: true })
-    .then(() => {
-        console.log("Database synchronized.");
-    })
-    .catch((err) => {
-        console.error("Error synchronizing database:", err);
-    });
-}
