@@ -3,35 +3,244 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard utilisateur</title>
+    <title>Dashboard Utilisateur</title>
 </head>
 <body>
-    <h1>Dashboard utilisateur</h1>
+    <h1>Dashboard Utilisateur</h1>
     
     <nav>
         <a href="/">Accueil</a> | 
-        <a href="/logout.html">Déconnexion</a>
+        <a href="/logout.html">Déconnexion</a> |
+        <a href="/profile">Mon Profil</a>
     </nav>
     
     <hr>
     
-    <h2>Utilisateurs</h2>
-    <div id="users">
-        <p>Chargement des utilisateurs...</p>
-    </div>
+    <h2>Mes Amis</h2>
+    
+    <h3>Chercher et ajouter des amis</h3>
+    <form method="GET" action="/user/friends/search">
+        <label for="search-friend">Rechercher un ami :</label>
+        <input type="text" id="search-friend" name="search" placeholder="Nom ou email" required>
+        <button type="submit">Chercher</button>
+    </form>
+    
+    <h3>Liste de mes amis</h3>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Nom</th>
+                <th>Email</th>
+                <th>Date d'ajout</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
     
     <hr>
     
-    <h2>Quiz</h2>
-    <div id="quizzes">
-        <p>Chargement des quiz...</p>
-    </div>
+    <h2>Créer un Quiz</h2>
+    
+    <h3>Créer un nouveau quiz</h3>
+    <form method="POST" action="/user/quizzes/add">
+        <label for="quiz-title">Titre du quiz :</label>
+        <input type="text" id="quiz-title" name="title" required>
+        <br><br>
+        
+        <label for="quiz-category">Catégorie :</label>
+        <select id="quiz-category" name="category" required>
+            <option value="">-- Sélectionner --</option>
+            <option value="histoire">Histoire</option>
+            <option value="geographie">Géographie</option>
+            <option value="sciences">Sciences</option>
+            <option value="litterature">Littérature</option>
+            <option value="sport">Sport</option>
+            <option value="cinema">Cinéma</option>
+            <option value="musique">Musique</option>
+            <option value="informatique">Informatique</option>
+            <option value="culture">Culture générale</option>
+            <option value="autre">Autre</option>
+        </select>
+        <br><br>
+        
+        <label for="quiz-description">Description :</label>
+        <textarea id="quiz-description" name="description" rows="3" cols="50" placeholder="Décrivez votre quiz..."></textarea>
+        <br><br>
+        
+        <label for="quiz-difficulty">Niveau de difficulté :</label>
+        <select id="quiz-difficulty" name="difficulty" required>
+            <option value="">-- Sélectionner --</option>
+            <option value="facile">Facile</option>
+            <option value="moyen">Moyen</option>
+            <option value="difficile">Difficile</option>
+        </select>
+        <br><br>
+        
+        <label for="quiz-privacy">Partage :</label>
+        <select id="quiz-privacy" name="privacy" required>
+            <option value="">-- Sélectionner --</option>
+            <option value="privee">Privé (amis uniquement)</option>
+            <option value="publique">Public</option>
+        </select>
+        <br><br>
+        
+        <label for="quiz-duration">Durée (en minutes) :</label>
+        <input type="number" id="quiz-duration" name="duration" min="1" placeholder="ex: 15">
+        <br><br>
+        
+        <button type="submit">Créer le quiz</button>
+    </form>
+    
+    <h3>Mes Quiz</h3>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Titre</th>
+                <th>Catégorie</th>
+                <th>Nb Questions</th>
+                <th>Partage</th>
+                <th>Date de création</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
     
     <hr>
     
-    <h2>Statistiques</h2>
-    <div id="stats">
-        <p>Chargement des statistiques...</p>
-    </div>
+    <h2>Quiz Disponibles</h2>
+    
+    <h3>Quiz de mes amis</h3>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Titre</th>
+                <th>Auteur</th>
+                <th>Catégorie</th>
+                <th>Nb Questions</th>
+                <th>Niveau</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+    
+    <h3>Quiz publics</h3>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Titre</th>
+                <th>Auteur</th>
+                <th>Catégorie</th>
+                <th>Nb Questions</th>
+                <th>Niveau</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+    
+    <hr>
+    
+    <h2>Mes Résultats</h2>
+    
+    <h3>Historique de mes quiz</h3>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Quiz</th>
+                <th>Auteur</th>
+                <th>Score</th>
+                <th>Date de réalisation</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+    
+    <h3>Résultats des amis</h3>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Ami</th>
+                <th>Quiz</th>
+                <th>Score</th>
+                <th>Date</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+    
+    <hr>
+    
+    <h2>Défis Entre Amis</h2>
+    
+    <h3>Créer un défi</h3>
+    <form method="POST" action="/user/challenges/add">
+        <label for="challenge-friend">Sélectionner un ami :</label>
+        <select id="challenge-friend" name="friend_id" required>
+            <option value="">-- Choisir un ami --</option>
+        </select>
+        <br><br>
+        
+        <label for="challenge-quiz">Quiz :</label>
+        <select id="challenge-quiz" name="quiz_id" required>
+            <option value="">-- Choisir un quiz --</option>
+        </select>
+        <br><br>
+        
+        <button type="submit">Lancer le défi</button>
+    </form>
+    
+    <h3>Mes défis en cours</h3>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Ami</th>
+                <th>Quiz</th>
+                <th>Mon score</th>
+                <th>Son score</th>
+                <th>Statut</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+    
+    <hr>
+    
+    <h2>Statistiques Personnelles</h2>
+    <ul>
+        <li>Nombre d'amis : <strong id="total-friends">0</strong></li>
+        <li>Quiz créés : <strong id="total-created-quizzes">0</strong></li>
+        <li>Quiz complétés : <strong id="total-completed-quizzes">0</strong></li>
+        <li>Score moyen : <strong id="average-score">-</strong>%</li>
+        <li>Défis en cours : <strong id="active-challenges">0</strong></li>
+        <li>Défis gagnés : <strong id="won-challenges">0</strong></li>
+    </ul>
+    
+    <hr>
+    
+    <h2>Paramètres</h2>
+    <ul>
+        <li><a href="/user/settings">Paramètres du compte</a></li>
+        <li><a href="/user/achievements">Mes réalisations</a></li>
+        <li><a href="/user/leaderboard">Classement global</a></li>
+        <li><a href="/user/notifications">Notifications</a></li>
+    </ul>
+    
+    <hr>
+    
+    <footer>
+        <p>Dashboard Utilisateur - Quizzeo&copy; 2025</p>
+    </footer>
 </body>
 </html>
