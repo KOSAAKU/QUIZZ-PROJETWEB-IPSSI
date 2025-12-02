@@ -187,6 +187,66 @@ app.get('/quizzes', async (req, res) => {
     }
 });
 
+app.post('/quizzes', async (req, res) => {
+    try {
+        // check if the user is authenticated AND has 'ecole' or 'entreprise' role
+        const token = req.headers.authorization?.split(' ')[1];
+        if (!token) {
+            return res.status(401).json({
+                error: 'Token manquant',
+                message: 'Aucun token d\'authentification fourni'
+            });
+        }
+        const decoded = await verifyToken(token);
+        if (!decoded) {
+            return res.status(401).json({
+                error: 'Token invalide',
+                message: 'Le token fourni est invalide'
+            });
+        }
+        const [userRows] = await sequelize.query(
+            `SELECT id, role FROM users WHERE id = :userId AND actif = true`,
+            {
+                replacements: { userId: decoded.userId }
+            }
+        );
+        if (!userRows || userRows.length === 0) {
+            return res.status(403).json({
+                error: 'Accès refusé',
+                message: 'Vous n\'avez pas les droits nécessaires pour accéder à cette ressource',
+            });
+        }
+        if (!['ecole', 'entreprise'].includes(userRows[0].role)) {
+            return res.status(403).json({
+                error: 'Accès refusé',
+                message: 'Seuls les utilisateurs avec le rôle ecole ou entreprise peuvent créer des quizzs',
+            });
+        }
+        const ownerId = userRows[0].id;
+        const { name, questions } = req.body;
+        if (!name || !questions) {
+            return res.status(400).json({
+                error: 'Validation error',
+                message: 'Name and questions are required (send JSON body with Content-Type: application/json)'
+            });
+        }
+        const result = await sequelize.query(
+            'INSERT INTO quizzs (name, questions, ownerId, status, createdAt, updatedAt) VALUES (:name, :questions, :ownerId, \'pending\', NOW(), NOW()) RETURNING id',
+             { replacements: { name, questions, ownerId } }
+        );
+        return res.status(201).json({
+            message: 'Quizz created successfully',
+            quizz: { id: result[0].id, name, questions, ownerId }
+        });
+    } catch (error) {
+        console.error('Error creating quizz:', error);
+        return res.status(500).json({
+            error: 'Internal server error',
+            message: error.message
+        });
+    }
+});
+
 // Gestionnaire d'erreurs global
 app.use((err, req, res, next) => {
     console.error('Unhandled error:', err);
