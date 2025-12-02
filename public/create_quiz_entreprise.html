@@ -1,11 +1,111 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Créer un quiz - Entreprise | Quizzeo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-    
+
+<body class="bg-[#FAF7FF] flex justify-center p-6">
+
+    <div class="bg-white w-full max-w-3xl shadow-xl rounded-3xl p-10">
+
+        <!-- Bouton retour -->
+        <a href="dashboard-entreprise.html" class="text-[#7B5BAB] flex items-center gap-2 mb-4">
+            <span class="text-lg">←</span>
+            Retour à la page d'accueil
+        </a>
+
+        <!-- Logo -->
+        <div class="flex justify-center mb-8">
+            <img src="/public/assets/img/img1.png" alt="Quizzeo" class="w-64">
+        </div>
+
+        <h1 class="text-3xl font-bold text-center text-[#1F1F3B] mb-10">
+            Création d'un quiz (Entreprise)
+        </h1>
+
+        <!-- Formulaire -->
+        <form class="space-y-6">
+
+            <!-- Titre -->
+            <div>
+                <label class="font-semibold block mb-1">Titre du quiz</label>
+                <input type="text" placeholder="Titre du quiz"
+                       class="w-full p-3 border rounded-xl" required>
+            </div>
+
+            <!-- Description -->
+            <div>
+                <label class="font-semibold block mb-1">Description</label>
+                <textarea placeholder="Objectifs, contenu du quiz..."
+                          class="w-full p-3 border rounded-xl" rows="3"></textarea>
+            </div>
+
+            <!-- Thème -->
+            <div>
+                <label class="font-semibold block mb-1">Thème</label>
+                <input type="text" placeholder="ex : Sécurité, RH, Management"
+                       class="w-full p-3 border rounded-xl" required>
+            </div>
+
+            <!-- Type de quiz -->
+            <div>
+                <label class="font-semibold block mb-1">Type de quiz</label>
+
+                <select class="w-full p-3 border rounded-xl" required>
+                    <option value="">-- Sélectionner --</option>
+                    <option value="qcm">QCM (Choix multiples)</option>
+                    <option value="libre">Réponses libres</option>
+                    <option value="mixte">Mixte (QCM + Réponses libres)</option>
+                </select>
+            </div>
+
+            <!-- Département -->
+            <div>
+                <label class="font-semibold block mb-1">Département ciblé</label>
+                <input type="text" placeholder="ex : Tous, IT, RH, Vente"
+                       class="w-full p-3 border rounded-xl">
+            </div>
+
+            <!-- Difficulté -->
+            <div>
+                <label class="font-semibold block mb-1">Niveau de difficulté</label>
+
+                <select class="w-full p-3 border rounded-xl">
+                    <option value="">-- Sélectionner --</option>
+                    <option value="debutant">Débutant</option>
+                    <option value="intermediaire">Intermédiaire</option>
+                    <option value="avance">Avancé</option>
+                </select>
+            </div>
+
+            <!-- Durée -->
+            <div>
+                <label class="font-semibold block mb-1">Durée (minutes)</label>
+                <input type="number" min="1" placeholder="ex : 45"
+                       class="w-full p-3 border rounded-xl">
+            </div>
+
+            <!-- Obligatoire ? -->
+            <div>
+                <label class="font-semibold block mb-1">Quiz obligatoire ?</label>
+
+                <select class="w-full p-3 border rounded-xl" required>
+                    <option value="">-- Sélectionner --</option>
+                    <option value="oui">Oui</option>
+                    <option value="non">Non</option>
+                </select>
+            </div>
+
+            <!-- Bouton -->
+            <button type="submit"
+                class="w-full bg-[#F7B0C7] text-white font-semibold py-3 rounded-full text-lg shadow-md hover:opacity-90 transition">
+                Créer le quiz
+            </button>
+        </form>
+    </div>
+
 </body>
 </html>

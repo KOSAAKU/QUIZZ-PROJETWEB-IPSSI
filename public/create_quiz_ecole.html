@@ -2,47 +2,89 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Créer un Quiz</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Créer un quiz - École | Quizzeo</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
+<body class="bg-[#FAF7FF] flex justify-center p-6">
 
-<body class="min-h-screen bg-gradient-to-br from-pink-50 to-orange-50 p-8">
+    <div class="bg-white w-full max-w-3xl shadow-xl rounded-3xl p-10">
 
-    <div class="max-w-3xl mx-auto bg-white p-10 rounded-2xl shadow-xl">
+        <!-- Bouton retour -->
+        <a href="dashboard-ecole.html" class="text-[#7B5BAB] flex items-center gap-2 mb-4">
+            <span class="text-lg">←</span>
+            Retour à la page d'accueil
+        </a>
 
-        <h1 class="text-3xl font-bold text-gray-800 mb-6">
-            Créer un nouveau <span class="text-pink-500">Quiz</span>
+        <!-- Logo -->
+        <div class="flex justify-center mb-8">
+            <img src="/public/assets/img/img1.png" alt="Quizzeo" class="w-64">
+        </div>
+
+        <h1 class="text-3xl font-bold text-center text-[#1F1F3B] mb-10">
+            Création d'un quiz
         </h1>
 
+        <!-- Formulaire -->
         <form class="space-y-6">
 
-            <!-- Nom du quiz -->
+            <!-- Titre -->
             <div>
-                <label class="font-semibold text-gray-700">Titre du quiz :</label>
-                <input type="text" class="w-full mt-2 p-3 border rounded-xl" placeholder="Ex : Sécurité informatique">
+                <label class="font-semibold block mb-1">Titre du quiz</label>
+                <input type="text" placeholder="Titre du quiz"
+                    class="w-full p-3 border rounded-xl" required>
             </div>
 
-            <!-- Ajout questions -->
-            <div class="border p-5 rounded-xl bg-gray-50">
-                <h2 class="text-xl font-semibold mb-4">Nouvelle question</h2>
+            <!-- Thème -->
+            <div>
+                <label class="font-semibold block mb-1">Thème</label>
+                <input type="text" placeholder="Thème du quiz"
+                    class="w-full p-3 border rounded-xl" required>
+            </div>
 
-                <input type="text" class="w-full p-3 border rounded-xl mb-4" placeholder="Écrire la question...">
+            <!-- Type -->
+            <div>
+                <label class="font-semibold block mb-2">Type de quiz</label>
 
-                <div class="space-y-2">
-                    <input type="text" class="w-full p-3 border rounded-xl" placeholder="Réponse 1">
-                    <input type="text" class="w-full p-3 border rounded-xl" placeholder="Réponse 2">
-                    <input type="text" class="w-full p-3 border rounded-xl" placeholder="Réponse 3">
+                <div class="flex flex-col gap-2">
+                    <label class="flex items-center gap-3">
+                        <input type="radio" name="type" class="w-4 h-4 text-purple-500" checked>
+                        <span>QCU (Choix multiples)</span>
+                    </label>
+
+                    <label class="flex items-center gap-3">
+                        <input type="radio" name="type" class="w-4 h-4 text-purple-500">
+                        <span>Réponse libre</span>
+                    </label>
                 </div>
-
-                <button class="mt-4 bg-pink-500 text-white px-6 py-2 rounded-xl hover:bg-pink-600">
-                    + Ajouter la question
-                </button>
             </div>
 
-            <button class="w-full bg-purple-500 text-white py-3 rounded-xl hover:bg-purple-600 transition">
+            <!-- Points -->
+            <div>
+                <label class="font-semibold block mb-1">Nombre de points par question</label>
+                <input type="number" min="1" value="1"
+                    class="w-full p-3 border rounded-xl">
+            </div>
+
+            <!-- Nombre de questions -->
+            <div>
+                <label class="font-semibold block mb-1">Nombre de questions</label>
+                <input type="number" min="1" value="10"
+                    class="w-full p-3 border rounded-xl">
+            </div>
+
+            <!-- Bonne réponse -->
+            <div>
+                <label class="font-semibold block mb-1">Bonne réponse</label>
+                <input type="text" placeholder="1"
+                    class="w-full p-3 border rounded-xl">
+            </div>
+
+            <!-- Bouton -->
+            <button type="submit"
+                class="w-full bg-[#F7B0C7] text-white font-semibold py-3 rounded-full text-lg shadow-md hover:opacity-90 transition">
                 Créer le quiz
             </button>
-
         </form>
     </div>
 
