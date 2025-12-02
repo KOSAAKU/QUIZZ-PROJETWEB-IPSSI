@@ -1,9 +1,12 @@
 import express from 'express';
+import cookieParser from 'cookie-parser';
+
 const app = express();
 
 // Middleware pour parser le JSON
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 
 import { logger } from './controllers/LoggerController.js';
 app.use((req, res, next) => {
@@ -51,14 +54,22 @@ app.get('/dashboard', (req, res) => {
 
 app.post('/register', async (req, res) => {
     try {
-        const { fullname, email, password } = req.body;
+        const { fullname, email, password, role } = req.body;
 
-        if (!fullname || !email || !password) {
+        if (!fullname || !email || !password || !role) {
             return res.status(400).json({
                 error: 'Validation error',
-                message: 'Fullname, email and password are required (send JSON body with Content-Type: application/json)'
+                message: 'Fullname, email, password, and role are required (send JSON body with Content-Type: application/json)'
             });
         }
+
+        if (role !== 'user' && role !== 'ecole' && role !== 'entreprise') {
+            return res.status(400).json({
+                error: 'Validation error',
+                message: 'Role must be one of: user, ecole, entreprise'
+            });
+        }
+
         // Check if user already exists
         const [existingUsers] = await sequelize.query(
             'SELECT * FROM users WHERE email = :email',
@@ -73,7 +84,7 @@ app.post('/register', async (req, res) => {
             });
         }
         // Register new user
-        await registerUser(fullname, email, password, 'user', true);
+        await registerUser(fullname, email, password, role, true);
 
         return res.status(201).json({
             message: 'User registered successfully'
@@ -127,13 +138,18 @@ app.post('/login', async (req, res) => {
 
 app.get('/users', async (req, res) => {
     try {
-        const token = req.headers.authorization?.split(' ')[1];
-        if (!token) {
+        // Récupérer le token depuis les cookies
+        const tokenCookie = req.cookies.token;
+
+        if (!tokenCookie) {
             return res.status(401).json({
                 error: 'Token manquant',
                 message: 'Aucun token d\'authentification fourni'
             });
         }
+
+        // Parser le token (il est stocké en JSON)
+        const token = JSON.parse(tokenCookie);
 
         const decoded = await verifyToken(token);
         if (!decoded) {

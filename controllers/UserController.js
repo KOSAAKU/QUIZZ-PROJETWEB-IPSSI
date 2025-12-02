@@ -1,19 +1,22 @@
 import { sequelize } from '../config/database.js';
 import bcrypt from 'bcrypt';
 
-export async function registerUser(fullname, username, password, role, actif) {
+export async function registerUser(fullname, email, password, role, actif) {
     const hashedPassword = await bcrypt.hash(password, 10);
-    const result = await sequelize.query(
-        'INSERT INTO users (fullname, username, password, role, actif) VALUES ($1, $2, $3, $4, $5) RETURNING id',
-        [fullname, username, hashedPassword, role, actif]
+    await sequelize.query(
+        'INSERT INTO users (fullname, email, password, role, actif) VALUES (:fullname, :email, :password, :role, :actif)',
+        {
+            replacements: { fullname, email, password: hashedPassword, role, actif }
+        }
     );
 
-    return { id: result[0].id, fullname, username, role, actif };
+    const [idResult] = await sequelize.query('SELECT LAST_INSERT_ID() as id');
+    return { id: idResult[0].id, fullname, email, role, actif };
 }
 
 export async function getUserById(userId) {
     const result = await sequelize.query(
-        'SELECT id, fullname, username, role, actif FROM users WHERE id = $1',
+        'SELECT id, fullname, email, role, actif FROM users WHERE id = $1',
         [userId]
     );
     return result.length > 0 ? result[0] : null;

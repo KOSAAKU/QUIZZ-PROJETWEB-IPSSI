@@ -37,7 +37,16 @@
         <input id="password2" name="password2" type="password" required class="w-full mt-1 p-3 rounded-xl bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 ring-secondary">
       </div>
 
-      <button id="submitBtn" type="submit" class="w-full py-3 mt-4 rounded-xl font-semibold text-lg shadow-lg transition btn-primary">
+      <div>
+        <label for="role" class="text-gray-700 font-medium">Rôle</label>
+        <select required name="role" id="role" class="w-full mt-1 p-3 rounded-xl bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2" style="--tw-ring-color:#A48AD6;">
+          <option value="user" selected>Utilisateur</option>
+          <option value="ecole">Ecole</option>
+          <option value="entreprise">Entreprise</option>
+        </select>
+      </div>
+
+      <button id="submitBtn" type="submit" class="w-full py-3 mt-4 rounded-xl text-white font-semibold text-lg shadow-lg hover:opacity-90 transition" style="background-color:#F26F7F;">
         S'inscrire
       </button>
     </form>
@@ -55,26 +64,26 @@
       const email = document.getElementById('email').value;
       const password = document.getElementById('password').value;
       const password2 = document.getElementById('password2').value;
+      const role = document.getElementById('role').value;
 
       if (password !== password2) {
         alert('Les mots de passe ne correspondent pas.');
         return;
       }
 
-      const res = await fetch('/api/register', {
+      const res = await fetch('/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, password })
+        body: JSON.stringify({ fullname: name, email, password, role })
       });
 
       const data = await res.json();
 
-      if (data.token) {
-        localStorage.setItem('jwt_token', data.token);
-        alert('Inscription réussie !');
-        window.location.href = '/login.html';
+      if (data.error) {
+        alert(data.message);
       } else {
-        alert('Erreur: ' + (data.message || 'Erreur'));
+        alert('Inscription réussie ! Vous pouvez maintenant vous connecter.');
+        window.location.href = '/login';
       }
     });
   </script>

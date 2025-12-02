@@ -92,5 +92,49 @@
             <p>&copy; 2025 Quizzeo - Tous droits réservés</p>
         </div>
     </footer>
+    <script>
+        let users = [];
+        fetch('/users', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            credentials: 'include'
+            })
+            .then(response => {
+                if (response.status === 401) {
+                    alert('Session expirée, veuillez vous reconnecter');
+                    window.location.href = '/login.html';
+                    return;
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (!data) return;
+
+                users = data.users;
+                const tbody = document.querySelector('table tbody');
+                users.forEach(user => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${user.id}</td>
+                        <td>${user.name}</td>
+                        <td>${user.email}</td>
+                        <td>${user.role}</td>
+                        <td>
+                            <form method="POST" action="/admin/users/delete" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?');">
+                                <input type="hidden" name="id" value="${user.id}">
+                                <button type="submit">Supprimer</button>
+                            </form>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            })
+            .catch(error => {
+                console.error('Erreur lors de la récupération des utilisateurs:', error);
+                alert('Erreur lors de la récupération des utilisateurs');
+            });
+    </script>
 </body>
 </html>
