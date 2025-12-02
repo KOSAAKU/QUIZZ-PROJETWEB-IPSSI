@@ -4,136 +4,172 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Créer un Quiz</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/assets/css/style.css">
 </head>
-<body>
-    <h1>Créer un nouveau Quiz</h1>
-    
-    <form method="POST" action="/api/quiz/create">
-        <h2>Informations du Quiz</h2>
+<body class="min-h-screen flex items-center justify-center">
+
+    <div class="bg-white shadow-xl rounded-2xl p-10 w-full max-w-4xl border-t-8 border-primary">
+
+        <h1 class="text-3xl font-bold text-center mb-6 text-gray-700">Créer un nouveau Quiz</h1>
         
-        <label for="titre">Titre du Quiz :</label>
-        <input type="text" id="titre" name="titre" required>
-        <br><br>
-        
-        <label for="description">Description :</label>
-        <textarea id="description" name="description" rows="4" cols="50"></textarea>
-        <br><br>
-        
-        <label for="categorie">Catégorie :</label>
-        <select id="categorie" name="categorie" required>
-            <option value="">-- Sélectionner une catégorie --</option>
-            <option value="histoire">Histoire</option>
-            <option value="geographie">Géographie</option>
-            <option value="sciences">Sciences</option>
-            <option value="litterature">Littérature</option>
-            <option value="sport">Sport</option>
-            <option value="cinema">Cinéma</option>
-            <option value="musique">Musique</option>
-            <option value="informatique">Informatique</option>
-            <option value="autre">Autre</option>
-        </select>
-        <br><br>
-        
-        <h2>Questions</h2>
-        
-        <h3>Question 1</h3>
-        <label for="q1">Question :</label>
-        <input type="text" id="q1" name="question_1" required>
-        <br><br>
-        
-        <label for="q1_a">Réponse A :</label>
-        <input type="text" id="q1_a" name="q1_reponse_a" required>
-        <br>
-        
-        <label for="q1_b">Réponse B :</label>
-        <input type="text" id="q1_b" name="q1_reponse_b" required>
-        <br>
-        
-        <label for="q1_c">Réponse C :</label>
-        <input type="text" id="q1_c" name="q1_reponse_c" required>
-        <br>
-        
-        <label for="q1_d">Réponse D :</label>
-        <input type="text" id="q1_d" name="q1_reponse_d" required>
-        <br>
-        
-        <label for="q1_correcte">Bonne réponse :</label>
-        <select id="q1_correcte" name="q1_correcte" required>
-            <option value="">-- Sélectionner --</option>
-            <option value="a">A</option>
-            <option value="b">B</option>
-            <option value="c">C</option>
-            <option value="d">D</option>
-        </select>
-        <br><br>
-        
-        <h3>Question 2</h3>
-        <label for="q2">Question :</label>
-        <input type="text" id="q2" name="question_2" required>
-        <br><br>
-        
-        <label for="q2_a">Réponse A :</label>
-        <input type="text" id="q2_a" name="q2_reponse_a" required>
-        <br>
-        
-        <label for="q2_b">Réponse B :</label>
-        <input type="text" id="q2_b" name="q2_reponse_b" required>
-        <br>
-        
-        <label for="q2_c">Réponse C :</label>
-        <input type="text" id="q2_c" name="q2_reponse_c" required>
-        <br>
-        
-        <label for="q2_d">Réponse D :</label>
-        <input type="text" id="q2_d" name="q2_reponse_d" required>
-        <br>
-        
-        <label for="q2_correcte">Bonne réponse :</label>
-        <select id="q2_correcte" name="q2_correcte" required>
-            <option value="">-- Sélectionner --</option>
-            <option value="a">A</option>
-            <option value="b">B</option>
-            <option value="c">C</option>
-            <option value="d">D</option>
-        </select>
-        <br><br>
-        
-        <h3>Question 3</h3>
-        <label for="q3">Question :</label>
-        <input type="text" id="q3" name="question_3" required>
-        <br><br>
-        
-        <label for="q3_a">Réponse A :</label>
-        <input type="text" id="q3_a" name="q3_reponse_a" required>
-        <br>
-        
-        <label for="q3_b">Réponse B :</label>
-        <input type="text" id="q3_b" name="q3_reponse_b" required>
-        <br>
-        
-        <label for="q3_c">Réponse C :</label>
-        <input type="text" id="q3_c" name="q3_reponse_c" required>
-        <br>
-        
-        <label for="q3_d">Réponse D :</label>
-        <input type="text" id="q3_d" name="q3_reponse_d" required>
-        <br>
-        
-        <label for="q3_correcte">Bonne réponse :</label>
-        <select id="q3_correcte" name="q3_correcte" required>
-            <option value="">-- Sélectionner --</option>
-            <option value="a">A</option>
-            <option value="b">B</option>
-            <option value="c">C</option>
-            <option value="d">D</option>
-        </select>
-        <br><br>
-        
-        <button type="submit">Créer le Quiz</button>
-        <button type="reset">Réinitialiser</button>
-        <br><br>
-        
-        <a href="/">Retour à l'accueil</a>
-    </form>
+        <form method="POST" action="/api/quiz/create" class="space-y-5">
+            <h2 class="text-2xl font-bold text-gray-700">Informations du Quiz</h2>
+            
+            <div>
+                <label for="titre" class="text-gray-700 font-medium">Titre du Quiz :</label>
+                <input type="text" id="titre" name="titre" required class="w-full mt-1 p-3 rounded-xl bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 ring-secondary">
+            </div>
+            
+            <div>
+                <label for="description" class="text-gray-700 font-medium">Description :</label>
+                <textarea id="description" name="description" rows="4" class="w-full mt-1 p-3 rounded-xl bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 ring-secondary"></textarea>
+            </div>
+            
+            <div>
+                <label for="categorie" class="text-gray-700 font-medium">Catégorie :</label>
+                <select id="categorie" name="categorie" required class="w-full mt-1 p-3 rounded-xl bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 ring-secondary">
+                    <option value="">-- Sélectionner une catégorie --</option>
+                    <option value="histoire">Histoire</option>
+                    <option value="geographie">Géographie</option>
+                    <option value="sciences">Sciences</option>
+                    <option value="litterature">Littérature</option>
+                    <option value="sport">Sport</option>
+                    <option value="cinema">Cinéma</option>
+                    <option value="musique">Musique</option>
+                    <option value="informatique">Informatique</option>
+                    <option value="autre">Autre</option>
+                </select>
+            </div>
+            
+            <h2 class="text-2xl font-bold text-gray-700 mt-6">Questions</h2>
+            
+            <div class="space-y-4">
+                <h3 class="text-xl font-bold text-gray-700">Question 1</h3>
+                <div>
+                    <label for="q1" class="text-gray-700 font-medium">Question :</label>
+                    <input type="text" id="q1" name="question_1" required class="w-full mt-1 p-3 rounded-xl bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 ring-secondary">
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label for="q1_a" class="text-gray-700 font-medium">Réponse A :</label>
+                        <input type="text" id="q1_a" name="q1_reponse_a" required class="w-full mt-1 p-3 rounded-xl bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 ring-secondary">
+                    </div>
+                    <div>
+                        <label for="q1_b" class="text-gray-700 font-medium">Réponse B :</label>
+                        <input type="text" id="q1_b" name="q1_reponse_b" required class="w-full mt-1 p-3 rounded-xl bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 ring-secondary">
+                    </div>
+                    <div>
+                        <label for="q1_c" class="text-gray-700 font-medium">Réponse C :</label>
+                        <input type="text" id="q1_c" name="q1_reponse_c" required class="w-full mt-1 p-3 rounded-xl bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 ring-secondary">
+                    </div>
+                    <div>
+                        <label for="q1_d" class="text-gray-700 font-medium">Réponse D :</label>
+                        <input type="text" id="q1_d" name="q1_reponse_d" required class="w-full mt-1 p-3 rounded-xl bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 ring-secondary">
+                    </div>
+                </div>
+                
+                <div>
+                    <label for="q1_correcte" class="text-gray-700 font-medium">Bonne réponse :</label>
+                    <select id="q1_correcte" name="q1_correcte" required class="w-full mt-1 p-3 rounded-xl bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 ring-secondary">
+                        <option value="">-- Sélectionner --</option>
+                        <option value="a">A</option>
+                        <option value="b">B</option>
+                        <option value="c">C</option>
+                        <option value="d">D</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="space-y-4">
+                <h3 class="text-xl font-bold text-gray-700">Question 2</h3>
+                <div>
+                    <label for="q2" class="text-gray-700 font-medium">Question :</label>
+                    <input type="text" id="q2" name="question_2" required class="w-full mt-1 p-3 rounded-xl bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 ring-secondary">
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label for="q2_a" class="text-gray-700 font-medium">Réponse A :</label>
+                        <input type="text" id="q2_a" name="q2_reponse_a" required class="w-full mt-1 p-3 rounded-xl bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 ring-secondary">
+                    </div>
+                    <div>
+                        <label for="q2_b" class="text-gray-700 font-medium">Réponse B :</label>
+                        <input type="text" id="q2_b" name="q2_reponse_b" required class="w-full mt-1 p-3 rounded-xl bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 ring-secondary">
+                    </div>
+                    <div>
+                        <label for="q2_c" class="text-gray-700 font-medium">Réponse C :</label>
+                        <input type="text" id="q2_c" name="q2_reponse_c" required class="w-full mt-1 p-3 rounded-xl bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 ring-secondary">
+                    </div>
+                    <div>
+                        <label for="q2_d" class="text-gray-700 font-medium">Réponse D :</label>
+                        <input type="text" id="q2_d" name="q2_reponse_d" required class="w-full mt-1 p-3 rounded-xl bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 ring-secondary">
+                    </div>
+                </div>
+                
+                <div>
+                    <label for="q2_correcte" class="text-gray-700 font-medium">Bonne réponse :</label>
+                    <select id="q2_correcte" name="q2_correcte" required class="w-full mt-1 p-3 rounded-xl bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 ring-secondary">
+                        <option value="">-- Sélectionner --</option>
+                        <option value="a">A</option>
+                        <option value="b">B</option>
+                        <option value="c">C</option>
+                        <option value="d">D</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="space-y-4">
+                <h3 class="text-xl font-bold text-gray-700">Question 3</h3>
+                <div>
+                    <label for="q3" class="text-gray-700 font-medium">Question :</label>
+                    <input type="text" id="q3" name="question_3" required class="w-full mt-1 p-3 rounded-xl bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 ring-secondary">
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label for="q3_a" class="text-gray-700 font-medium">Réponse A :</label>
+                        <input type="text" id="q3_a" name="q3_reponse_a" required class="w-full mt-1 p-3 rounded-xl bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 ring-secondary">
+                    </div>
+                    <div>
+                        <label for="q3_b" class="text-gray-700 font-medium">Réponse B :</label>
+                        <input type="text" id="q3_b" name="q3_reponse_b" required class="w-full mt-1 p-3 rounded-xl bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 ring-secondary">
+                    </div>
+                    <div>
+                        <label for="q3_c" class="text-gray-700 font-medium">Réponse C :</label>
+                        <input type="text" id="q3_c" name="q3_reponse_c" required class="w-full mt-1 p-3 rounded-xl bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 ring-secondary">
+                    </div>
+                    <div>
+                        <label for="q3_d" class="text-gray-700 font-medium">Réponse D :</label>
+                        <input type="text" id="q3_d" name="q3_reponse_d" required class="w-full mt-1 p-3 rounded-xl bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 ring-secondary">
+                    </div>
+                </div>
+                
+                <div>
+                    <label for="q3_correcte" class="text-gray-700 font-medium">Bonne réponse :</label>
+                    <select id="q3_correcte" name="q3_correcte" required class="w-full mt-1 p-3 rounded-xl bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 ring-secondary">
+                        <option value="">-- Sélectionner --</option>
+                        <option value="a">A</option>
+                        <option value="b">B</option>
+                        <option value="c">C</option>
+                        <option value="d">D</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="flex space-x-4 mt-6">
+                <button type="submit" class="w-full py-3 rounded-xl font-semibold text-lg shadow-lg transition btn-primary">Créer le Quiz</button>
+                <button type="reset" class="w-full py-3 rounded-xl font-semibold text-lg shadow-lg transition btn-secondary">Réinitialiser</button>
+            </div>
+            
+            <div class="text-center mt-4">
+                <a href="/" class="link">Retour à l'accueil</a>
+            </div>
+        </form>
+    </div>
 </body>
+</html>
+
 </html>

@@ -3,116 +3,94 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Admin</title>
+    <title>Dashboard Admin - Quizzeo</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/assets/css/style.css">
 </head>
-<body>
-    <h1>Dashboard Admin</h1>
-    
-    <nav>
-        <a href="/">Accueil</a> | 
-        <a href="/logout.html">Déconnexion</a>
-    </nav>
-    
-    <hr>
-    
-    <h2>Gestion des Utilisateurs</h2>
-    
-    <h3>Ajouter un utilisateur</h3>
-    <form method="POST" action="/admin/users/add">
-        <label for="name">Nom :</label>
-        <input type="text" id="name" name="name" required>
-        <br><br>
-        
-        <label for="email">Email :</label>
-        <input type="email" id="email" name="email" required>
-        <br><br>
-        
-        <label for="password">Mot de passe :</label>
-        <input type="password" id="password" name="password" required>
-        <br><br>
-        
-        <label for="role">Rôle :</label>
-        <select id="role" name="role" required>
-            <option value="user">Utilisateur</option>
-            <option value="admin">Admin</option>
-        </select>
-        <br><br>
-        
-        <button type="submit">Ajouter</button>
-    </form>
-    
-    <h3>Liste des utilisateurs</h3>
-    <table border="1">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Nom</th>
-                <th>Email</th>
-                <th>Rôle</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-        </tbody>
-    </table>
-    
-    <hr>
-    
-    <h2>Gestion des Quiz</h2>
-    
-    <h3>Ajouter un quiz</h3>
-    <form method="POST" action="/admin/quizzes/add">
-        <label for="title">Titre :</label>
-        <input type="text" id="title" name="title" required>
-        <br><br>
-        
-        <label for="category">Catégorie :</label>
-        <select id="category" name="category" required>
-            <option value="">-- Sélectionner --</option>
-            <option value="histoire">Histoire</option>
-            <option value="geographie">Géographie</option>
-            <option value="sciences">Sciences</option>
-            <option value="litterature">Littérature</option>
-            <option value="autre">Autre</option>
-        </select>
-        <br><br>
-        
-        <label for="description">Description :</label>
-        <textarea id="description" name="description" rows="4" cols="50"></textarea>
-        <br><br>
-        
-        <button type="submit">Ajouter</button>
-    </form>
-    
-    <h3>Liste des quiz</h3>
-    <table border="1">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Titre</th>
-                <th>Catégorie</th>
-                <th>Auteur</th>
-                <th>Questions</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-        </tbody>
-    </table>
-    
-    <hr>
-    
-    <h2>Statistiques</h2>
-    <ul>
-        <li>Total d'utilisateurs : 0</li>
-        <li>Total de quiz : 0</li>
-        <li>Total de questions : 0</li>
-    </ul>
-    
-    <hr>
-    
-    <footer>
-        <p>Dashboard Admin - Quizzeo &copy; 2025</p>
+<body class="bg-gray-100">
+
+    <header class="bg-white shadow-md">
+        <nav class="container mx-auto px-6 py-3 flex justify-between items-center">
+            <a href="/" class="text-2xl font-bold text-gray-800">🎯 Quizzeo Admin</a>
+            <div>
+                <a href="/logout.html" class="px-4 py-2 leading-none rounded-lg btn-secondary text-white">Déconnexion</a>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mx-auto px-6 py-12">
+        <h1 class="text-3xl font-bold text-gray-800 mb-6">Dashboard Admin</h1>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Section Gestion des Utilisateurs -->
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">Gestion des Utilisateurs</h2>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead>
+                            <tr class="bg-gray-200">
+                                <th class="p-3">ID</th>
+                                <th class="p-3">Nom</th>
+                                <th class="p-3">Email</th>
+                                <th class="p-3">Rôle</th>
+                                <th class="p-3">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- User rows here -->
+                        </tbody>
+                    </table>
+                </div>
+                 <a href="#" class="mt-4 inline-block btn-primary text-white py-2 px-4 rounded-lg">Ajouter un utilisateur</a>
+            </div>
+
+            <!-- Section Gestion des Quiz -->
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">Gestion des Quiz</h2>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead>
+                            <tr class="bg-gray-200">
+                                <th class="p-3">ID</th>
+                                <th class="p-3">Titre</th>
+                                <th class="p-3">Auteur</th>
+                                <th class="p-3">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Quiz rows here -->
+                        </tbody>
+                    </table>
+                </div>
+                <a href="#" class="mt-4 inline-block btn-primary text-white py-2 px-4 rounded-lg">Ajouter un quiz</a>
+            </div>
+
+            <!-- Section Statistiques -->
+            <div class="bg-white rounded-lg shadow-lg p-6 lg:col-span-2">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">Statistiques</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+                    <div class="bg-blue-100 p-4 rounded-lg">
+                        <p class="text-3xl font-bold">0</p>
+                        <p class="text-gray-600">Utilisateurs</p>
+                    </div>
+                    <div class="bg-green-100 p-4 rounded-lg">
+                        <p class="text-3xl font-bold">0</p>
+                        <p class="text-gray-600">Quiz</p>
+                    </div>
+                    <div class="bg-yellow-100 p-4 rounded-lg">
+                        <p class="text-3xl font-bold">0</p>
+                        <p class="text-gray-600">Questions</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-white mt-16 py-6">
+        <div class="container mx-auto px-6 text-center text-gray-600">
+            <p>&copy; 2025 Quizzeo - Tous droits réservés</p>
+        </div>
     </footer>
     <script>
         let users = [];
