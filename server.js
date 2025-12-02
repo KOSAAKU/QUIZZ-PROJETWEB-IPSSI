@@ -15,6 +15,7 @@ app.use((req, res, next) => {
 import { sequelize } from './config/database.js';
 import { loginUser } from './controllers/AuthController.js';
 import { registerUser } from './controllers/UserController.js';
+import { verifyToken } from './controllers/TokenController.js';
 
 // Fonction async pour initialiser la base de données
 async function initDatabase() {
@@ -34,8 +35,6 @@ async function initDatabase() {
 await initDatabase();
 
 app.use(express.static('public'));
-
-
 
 app.get('/login', (req, res) => {
     res.sendFile('public/login.html', { root: '.' });
@@ -89,7 +88,6 @@ app.post('/register', async (req, res) => {
 
 app.post('/login', async (req, res) => {
     try {
-        console.log('Login request body:', req.body);
         const { email, password } = req.body;
 
         if (!email || !password) {
@@ -119,6 +117,53 @@ app.post('/login', async (req, res) => {
         }
     } catch (error) {
         console.error('Login error:', error);
+        return res.status(500).json({
+            error: 'Internal server error',
+            message: error.message
+        });
+    }
+});
+
+app.get('/users', async (req, res) => {
+    try {
+        const token = req.headers.authorization?.split(' ')[1];
+        if (!token) {
+            return res.status(401).json({
+                error: 'Token manquant',
+                message: 'Aucun token d\'authentification fourni'
+            });
+        }
+
+        const decoded = await verifyToken(token);
+        if (!decoded) {
+            return res.status(401).json({
+                error: 'Token invalide',
+                message: 'Le token fourni est invalide'
+            });
+        }
+
+        // Vérifier que l'utilisateur authentifié existe, est actif et a le rôle admin
+        const [adminRows] = await sequelize.query(
+            `SELECT id, role FROM users WHERE id = :userId AND role = 'admin' AND actif = true`,
+            {
+                replacements: { userId: decoded.userId }
+            }
+        );
+
+        if (!adminRows || adminRows.length === 0) {
+            return res.status(403).json({
+                error: 'Accès refusé',
+                message: 'Vous n\'avez pas les droits nécessaires pour accéder à cette ressource',
+            });
+        }
+
+        const [users] = await sequelize.query(
+            'SELECT id, fullname, email, role, actif FROM users'
+        );
+        return res.status(200).json({ users });
+    }
+    catch (error) {
+        console.error('Error fetching users:', error);
         return res.status(500).json({
             error: 'Internal server error',
             message: error.message
