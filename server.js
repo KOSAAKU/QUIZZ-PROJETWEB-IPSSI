@@ -51,14 +51,22 @@ app.get('/dashboard', (req, res) => {
 
 app.post('/register', async (req, res) => {
     try {
-        const { fullname, email, password } = req.body;
+        const { fullname, email, password, role } = req.body;
 
-        if (!fullname || !email || !password) {
+        if (!fullname || !email || !password || !role) {
             return res.status(400).json({
                 error: 'Validation error',
-                message: 'Fullname, email and password are required (send JSON body with Content-Type: application/json)'
+                message: 'Fullname, email, password, and role are required (send JSON body with Content-Type: application/json)'
             });
         }
+
+        if (role !== 'user' && role !== 'ecole' && role !== 'entreprise') {
+            return res.status(400).json({
+                error: 'Validation error',
+                message: 'Role must be one of: user, ecole, entreprise'
+            });
+        }
+
         // Check if user already exists
         const [existingUsers] = await sequelize.query(
             'SELECT * FROM users WHERE email = :email',
@@ -73,7 +81,7 @@ app.post('/register', async (req, res) => {
             });
         }
         // Register new user
-        await registerUser(fullname, email, password, 'user', true);
+        await registerUser(fullname, email, password, role, true);
 
         return res.status(201).json({
             message: 'User registered successfully'
