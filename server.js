@@ -5,6 +5,13 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+import { logger } from './controllers/LoggerController.js';
+app.use((req, res, next) => {
+    console.log('Request received:');
+    logger(req, res);
+    next();
+});
+
 import { sequelize } from './config/database.js';
 import { loginUser } from './controllers/AuthController.js';
 import { registerUser } from './controllers/UserController.js';
