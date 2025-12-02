@@ -165,6 +165,21 @@ app.get('/users', async (req, res) => {
     }
 });
 
+app.get('/quizzes', async (req, res) => {
+    try {
+        const [quizzes] = await sequelize.query(
+            'SELECT * FROM quizzs'
+        );
+        return res.status(200).json({ quizzes });
+    } catch (error) {
+        console.error('Error fetching quizzes:', error);
+        return res.status(500).json({
+            error: 'Internal server error',
+            message: error.message
+        });
+    }
+});
+
 // Gestionnaire d'erreurs global
 app.use((err, req, res, next) => {
     console.error('Unhandled error:', err);
