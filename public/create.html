@@ -8,96 +8,275 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="/assets/css/style.css">
 </head>
-<body class="min-h-screen flex items-center justify-center">
+<body class="min-h-screen bg-gray-100">
 
-    <div class="bg-white shadow-xl rounded-2xl p-10 w-full max-w-4xl border-t-8 border-primary">
+    <nav class="bg-white shadow p-4 mb-6">
+        <div class="max-w-6xl mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-bold text-primary">Quizzeo</h1>
+            <div>
+                <a href="/" class="text-gray-700 hover:text-primary mr-4">Accueil</a>
+                <a href="/dashboard" class="text-gray-700 hover:text-primary">Mon Dashboard</a>
+            </div>
+        </div>
+    </nav>
 
-        <h1 class="text-3xl font-bold text-center mb-6 text-gray-700">Créer un nouveau Quiz</h1>
+    <div class="max-w-4xl mx-auto">
+        <div class="bg-white shadow-xl rounded-2xl p-10 border-t-8 border-primary">
+            
+            <h1 class="text-3xl font-bold text-center mb-6 text-gray-700">Créer un nouveau Quiz</h1>
+            
+            <div id="step1" class="space-y-5">
+                <h2 class="text-2xl font-bold text-gray-700 mb-4">Étape 1 : Informations du Quiz</h2>
+                
+                <form id="quiz-form" class="space-y-5">
+                    <div>
+                        <label for="titre" class="text-gray-700 font-medium">Titre du Quiz :</label>
+                        <input type="text" id="titre" name="titre" required class="w-full mt-1 p-3 rounded-xl bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 ring-secondary">
+                    </div>
+                    
+                    <div>
+                        <label for="description" class="text-gray-700 font-medium">Description :</label>
+                        <textarea id="description" name="description" rows="4" class="w-full mt-1 p-3 rounded-xl bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 ring-secondary"></textarea>
+                    </div>
+                    
+                    <div>
+                        <label for="categorie" class="text-gray-700 font-medium">Catégorie :</label>
+                        <select id="categorie" name="categorie" required class="w-full mt-1 p-3 rounded-xl bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 ring-secondary">
+                            <option value="">-- Sélectionner une catégorie --</option>
+                            <option value="histoire">Histoire</option>
+                            <option value="geographie">Géographie</option>
+                            <option value="sciences">Sciences</option>
+                            <option value="litterature">Littérature</option>
+                            <option value="sport">Sport</option>
+                            <option value="cinema">Cinéma</option>
+                            <option value="musique">Musique</option>
+                            <option value="informatique">Informatique</option>
+                            <option value="autre">Autre</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label for="type" class="text-gray-700 font-medium">Type de Quiz :</label>
+                        <select id="type" name="type" required onchange="updateQuestionType()" class="w-full mt-1 p-3 rounded-xl bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 ring-secondary">
+                            <option value="">-- Sélectionner un type --</option>
+                            <option value="qcm">QCM (Choix multiples)</option>
+                            <option value="libre">Réponses libres</option>
+                        </select>
+                    </div>
+                    
+                    <button type="button" onclick="goToQuestionsStep()" class="w-full py-3 mt-4 rounded-xl font-semibold text-lg shadow-lg transition btn-primary">
+                        Suivant
+                    </button>
+                </form>
+            </div>
+            
+            <div id="step2" style="display:none;" class="space-y-5">
+                <h2 class="text-2xl font-bold text-gray-700 mb-4">Étape 2 : Ajouter les Questions</h2>
+                
+                <div id="questions-list"></div>
+                
+                <button type="button" onclick="addQuestion()" class="w-full py-3 mt-4 rounded-xl font-semibold text-lg shadow-lg transition bg-green-500 hover:bg-green-600 text-white">
+                    + Ajouter une question
+                </button>
+                
+                <div class="flex gap-4 mt-6">
+                    <button type="button" onclick="submitQuiz()" class="flex-1 py-3 rounded-xl font-semibold text-lg shadow-lg transition btn-primary">
+                        Créer le Quiz
+                    </button>
+                    <button type="button" onclick="goBackToInfo()" class="flex-1 py-3 rounded-xl font-semibold text-lg shadow-lg transition bg-gray-500 hover:bg-gray-600 text-white">
+                        Retour
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let currentQuizType = '';
+        let questionCount = 0;
         
-        <form method="POST" action="/api/quiz/create" class="space-y-5">
-            <h2 class="text-2xl font-bold text-gray-700">Informations du Quiz</h2>
+        function updateQuestionType() {
+            currentQuizType = document.getElementById('type').value;
+        }
+        
+        function goToQuestionsStep() {
+            const titre = document.getElementById('titre').value;
+            const categorie = document.getElementById('categorie').value;
+            const type = document.getElementById('type').value;
             
-            <div>
-                <label for="titre" class="text-gray-700 font-medium">Titre du Quiz :</label>
-                <input type="text" id="titre" name="titre" required class="w-full mt-1 p-3 rounded-xl bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 ring-secondary">
-            </div>
+            if (!titre || !categorie || !type) {
+                alert('Veuillez remplir tous les champs');
+                return;
+            }
             
-            <div>
-                <label for="description" class="text-gray-700 font-medium">Description :</label>
-                <textarea id="description" name="description" rows="4" class="w-full mt-1 p-3 rounded-xl bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 ring-secondary"></textarea>
-            </div>
+            document.getElementById('step1').style.display = 'none';
+            document.getElementById('step2').style.display = 'block';
             
-            <div>
-                <label for="categorie" class="text-gray-700 font-medium">Catégorie :</label>
-                <select id="categorie" name="categorie" required class="w-full mt-1 p-3 rounded-xl bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 ring-secondary">
-                    <option value="">-- Sélectionner une catégorie --</option>
-                    <option value="histoire">Histoire</option>
-                    <option value="geographie">Géographie</option>
-                    <option value="sciences">Sciences</option>
-                    <option value="litterature">Littérature</option>
-                    <option value="sport">Sport</option>
-                    <option value="cinema">Cinéma</option>
-                    <option value="musique">Musique</option>
-                    <option value="informatique">Informatique</option>
-                    <option value="autre">Autre</option>
-                </select>
-            </div>
+            if (questionCount === 0) {
+                addQuestion();
+            }
+        }
+        
+        function goBackToInfo() {
+            document.getElementById('step1').style.display = 'block';
+            document.getElementById('step2').style.display = 'none';
+        }
+        
+        function addQuestion() {
+            questionCount++;
+            const questionsList = document.getElementById('questions-list');
             
-            <h2 class="text-2xl font-bold text-gray-700 mt-6">Questions</h2>
+            let questionHTML = `
+                <div id="question-${questionCount}" class="bg-gray-50 border border-gray-200 rounded-xl p-6 mb-4">
+                    <h3 class="text-xl font-bold text-gray-700 mb-4">Question ${questionCount}</h3>
+                    
+                    <div class="mb-4">
+                        <label for="q${questionCount}-text" class="text-gray-700 font-medium">Énoncé :</label>
+                        <textarea id="q${questionCount}-text" class="question-text w-full mt-1 p-3 rounded-xl bg-white border border-gray-300 focus:outline-none focus:ring-2 ring-secondary" rows="2" required></textarea>
+                    </div>
+            `;
             
-            <div class="space-y-4">
-                <h3 class="text-xl font-bold text-gray-700">Question 1</h3>
-                <div>
-                    <label for="q1" class="text-gray-700 font-medium">Question :</label>
-                    <input type="text" id="q1" name="question_1" required class="w-full mt-1 p-3 rounded-xl bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 ring-secondary">
+            if (currentQuizType === 'qcm') {
+                questionHTML += `
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label for="q${questionCount}-a" class="text-gray-700 font-medium">Réponse A :</label>
+                            <input type="text" id="q${questionCount}-a" class="qcm-answer w-full mt-1 p-3 rounded-xl bg-white border border-gray-300 focus:outline-none focus:ring-2 ring-secondary" required>
+                        </div>
+                        
+                        <div>
+                            <label for="q${questionCount}-b" class="text-gray-700 font-medium">Réponse B :</label>
+                            <input type="text" id="q${questionCount}-b" class="qcm-answer w-full mt-1 p-3 rounded-xl bg-white border border-gray-300 focus:outline-none focus:ring-2 ring-secondary" required>
+                        </div>
+                        
+                        <div>
+                            <label for="q${questionCount}-c" class="text-gray-700 font-medium">Réponse C :</label>
+                            <input type="text" id="q${questionCount}-c" class="qcm-answer w-full mt-1 p-3 rounded-xl bg-white border border-gray-300 focus:outline-none focus:ring-2 ring-secondary" required>
+                        </div>
+                        
+                        <div>
+                            <label for="q${questionCount}-d" class="text-gray-700 font-medium">Réponse D :</label>
+                            <input type="text" id="q${questionCount}-d" class="qcm-answer w-full mt-1 p-3 rounded-xl bg-white border border-gray-300 focus:outline-none focus:ring-2 ring-secondary" required>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="q${questionCount}-correcte" class="text-gray-700 font-medium">Bonne réponse :</label>
+                        <select id="q${questionCount}-correcte" class="qcm-correct w-full mt-1 p-3 rounded-xl bg-white border border-gray-300 focus:outline-none focus:ring-2 ring-secondary" required>
+                            <option value="">-- Sélectionner --</option>
+                            <option value="a">A</option>
+                            <option value="b">B</option>
+                            <option value="c">C</option>
+                            <option value="d">D</option>
+                        </select>
+                    </div>
+                `;
+            } else if (currentQuizType === 'libre') {
+                questionHTML += `
+                    <div class="mb-4">
+                        <label for="q${questionCount}-answer" class="text-gray-700 font-medium">Réponse attendue :</label>
+                        <textarea id="q${questionCount}-answer" class="libre-answer w-full mt-1 p-3 rounded-xl bg-white border border-gray-300 focus:outline-none focus:ring-2 ring-secondary" rows="2"></textarea>
+                    </div>
+                `;
+            }
+            
+            questionHTML += `
+                    <button type="button" onclick="deleteQuestion(${questionCount})" class="w-full py-2 mt-4 rounded-xl font-semibold text-lg shadow-lg transition bg-red-500 hover:bg-red-600 text-white">
+                        Supprimer cette question
+                    </button>
                 </div>
+            `;
+            
+            questionsList.innerHTML += questionHTML;
+        }
+        
+        function deleteQuestion(questionId) {
+            const questionDiv = document.getElementById(`question-${questionId}`);
+            if (questionDiv) {
+                questionDiv.remove();
+            }
+        }
+        
+        function submitQuiz() {
+            const titre = document.getElementById('titre').value;
+            const description = document.getElementById('description').value;
+            const categorie = document.getElementById('categorie').value;
+            const type = document.getElementById('type').value;
+            
+            const questions = [];
+            const questionDivs = document.querySelectorAll('[id^="question-"]');
+            
+            questionDivs.forEach((div, index) => {
+                const questionText = div.querySelector('.question-text').value;
                 
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label for="q1_a" class="text-gray-700 font-medium">Réponse A :</label>
-                        <input type="text" id="q1_a" name="q1_reponse_a" required class="w-full mt-1 p-3 rounded-xl bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 ring-secondary">
-                    </div>
-                    <div>
-                        <label for="q1_b" class="text-gray-700 font-medium">Réponse B :</label>
-                        <input type="text" id="q1_b" name="q1_reponse_b" required class="w-full mt-1 p-3 rounded-xl bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 ring-secondary">
-                    </div>
-                    <div>
-                        <label for="q1_c" class="text-gray-700 font-medium">Réponse C :</label>
-                        <input type="text" id="q1_c" name="q1_reponse_c" required class="w-full mt-1 p-3 rounded-xl bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 ring-secondary">
-                    </div>
-                    <div>
-                        <label for="q1_d" class="text-gray-700 font-medium">Réponse D :</label>
-                        <input type="text" id="q1_d" name="q1_reponse_d" required class="w-full mt-1 p-3 rounded-xl bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 ring-secondary">
-                    </div>
-                </div>
+                if (!questionText) {
+                    alert(`La question ${index + 1} est vide`);
+                    return;
+                }
                 
-                <div>
-                    <label for="q1_correcte" class="text-gray-700 font-medium">Bonne réponse :</label>
-                    <select id="q1_correcte" name="q1_correcte" required class="w-full mt-1 p-3 rounded-xl bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 ring-secondary">
-                        <option value="">-- Sélectionner --</option>
-                        <option value="a">A</option>
-                        <option value="b">B</option>
-                        <option value="c">C</option>
-                        <option value="d">D</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="space-y-4">
-                <h3 class="text-xl font-bold text-gray-700">Question 2</h3>
-                <div>
-                    <label for="q2" class="text-gray-700 font-medium">Question :</label>
-                    <input type="text" id="q2" name="question_2" required class="w-full mt-1 p-3 rounded-xl bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 ring-secondary">
-                </div>
+                let question = {
+                    text: questionText,
+                    type: type
+                };
                 
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label for="q2_a" class="text-gray-700 font-medium">Réponse A :</label>
-                        <input type="text" id="q2_a" name="q2_reponse_a" required class="w-full mt-1 p-3 rounded-xl bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 ring-secondary">
-                    </div>
-                    <div>
-                        <label for="q2_b" class="text-gray-700 font-medium">Réponse B :</label>
-                        <input type="text" id="q2_b" name="q2_reponse_b" required class="w-full mt-1 p-3 rounded-xl bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 ring-secondary">
+                if (type === 'qcm') {
+                    const answers = div.querySelectorAll('.qcm-answer');
+                    const correctAnswer = div.querySelector('.qcm-correct').value;
+                    
+                    if (!correctAnswer) {
+                        alert(`Sélectionnez la bonne réponse pour la question ${index + 1}`);
+                        return;
+                    }
+                    
+                    question.answers = {
+                        a: answers[0].value,
+                        b: answers[1].value,
+                        c: answers[2].value,
+                        d: answers[3].value
+                    };
+                    question.correct = correctAnswer;
+                } else if (type === 'libre') {
+                    question.expectedAnswer = div.querySelector('.libre-answer').value;
+                }
+                
+                questions.push(question);
+            });
+            
+            if (questions.length === 0) {
+                alert('Ajoutez au moins une question');
+                return;
+            }
+            
+            const quizData = {
+                title: titre,
+                description: description,
+                category: categorie,
+                type: type,
+                questions: questions
+            };
+            
+            console.log('Quiz à créer:', quizData);
+            
+            fetch('/api/quiz/create', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(quizData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert('Quiz créé avec succès !');
+                window.location.href = '/dashboard';
+            })
+            .catch(error => {
+                console.error('Erreur:', error);
+                alert('Erreur lors de la création du quiz');
+            });
+        }
+    </script>
+</body>
+</html>
                     </div>
                     <div>
                         <label for="q2_c" class="text-gray-700 font-medium">Réponse C :</label>
