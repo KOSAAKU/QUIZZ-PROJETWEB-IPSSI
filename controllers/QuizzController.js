@@ -37,10 +37,26 @@ export async function deleteQuizz(quizzId) {
 }
 
 export async function updateQuizz(quizzId, name, questions) {
-    await sequelize.query(
+    try {
+        // check if the quizz status is 'pending'
+        const statusResult = await getQuizzStatus(quizzId);
+
+        if (!statusResult) {
+            throw new Error('Quizz not found');
+        }
+        
+        if (statusResult !== 'pending') {
+            throw new Error('Only pending quizzs can be updated');
+        }
+
+        await sequelize.query(
         'UPDATE quizzs SET name = :name, questions = :questions WHERE id = :quizzId',
         { replacements: { quizzId, name, questions } }
-    );
+        );
+    } catch (error) {
+        console.error('Update quizz error:', error);
+        throw error;
+    }
 }
 
 export async function getQuizzStatus(quizzId) {
