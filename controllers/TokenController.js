@@ -19,7 +19,6 @@ export async function createToken(payload, expiresIn = '30d') {
     }
 }
 
-
 export async function verifyToken(token) {
     try {
         const secret = process.env.JWT_SECRET;
