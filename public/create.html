@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Créer un Quiz</title>
+</head>
+<body>
+    <h1>Créer un nouveau Quiz</h1>
+    
+    <form method="POST" action="/api/quiz/create">
+        <h2>Informations du Quiz</h2>
+        
+        <label for="titre">Titre du Quiz :</label>
+        <input type="text" id="titre" name="titre" required>
+        <br><br>
+        
+        <label for="description">Description :</label>
+        <textarea id="description" name="description" rows="4" cols="50"></textarea>
+        <br><br>
+        
+        <label for="categorie">Catégorie :</label>
+        <select id="categorie" name="categorie" required>
+            <option value="">-- Sélectionner une catégorie --</option>
+            <option value="histoire">Histoire</option>
+            <option value="geographie">Géographie</option>
+            <option value="sciences">Sciences</option>
+            <option value="litterature">Littérature</option>
+            <option value="sport">Sport</option>
+            <option value="cinema">Cinéma</option>
+            <option value="musique">Musique</option>
+            <option value="informatique">Informatique</option>
+            <option value="autre">Autre</option>
+        </select>
+        <br><br>
+        
+        <h2>Questions</h2>
+        
+        <h3>Question 1</h3>
+        <label for="q1">Question :</label>
+        <input type="text" id="q1" name="question_1" required>
+        <br><br>
+        
+        <label for="q1_a">Réponse A :</label>
+        <input type="text" id="q1_a" name="q1_reponse_a" required>
+        <br>
+        
+        <label for="q1_b">Réponse B :</label>
+        <input type="text" id="q1_b" name="q1_reponse_b" required>
+        <br>
+        
+        <label for="q1_c">Réponse C :</label>
+        <input type="text" id="q1_c" name="q1_reponse_c" required>
+        <br>
+        
+        <label for="q1_d">Réponse D :</label>
+        <input type="text" id="q1_d" name="q1_reponse_d" required>
+        <br>
+        
+        <label for="q1_correcte">Bonne réponse :</label>
+        <select id="q1_correcte" name="q1_correcte" required>
+            <option value="">-- Sélectionner --</option>
+            <option value="a">A</option>
+            <option value="b">B</option>
+            <option value="c">C</option>
+            <option value="d">D</option>
+        </select>
+        <br><br>
+        
+        <h3>Question 2</h3>
+        <label for="q2">Question :</label>
+        <input type="text" id="q2" name="question_2" required>
+        <br><br>
+        
+        <label for="q2_a">Réponse A :</label>
+        <input type="text" id="q2_a" name="q2_reponse_a" required>
+        <br>
+        
+        <label for="q2_b">Réponse B :</label>
+        <input type="text" id="q2_b" name="q2_reponse_b" required>
+        <br>
+        
+        <label for="q2_c">Réponse C :</label>
+        <input type="text" id="q2_c" name="q2_reponse_c" required>
+        <br>
+        
+        <label for="q2_d">Réponse D :</label>
+        <input type="text" id="q2_d" name="q2_reponse_d" required>
+        <br>
+        
+        <label for="q2_correcte">Bonne réponse :</label>
+        <select id="q2_correcte" name="q2_correcte" required>
+            <option value="">-- Sélectionner --</option>
+            <option value="a">A</option>
+            <option value="b">B</option>
+            <option value="c">C</option>
+            <option value="d">D</option>
+        </select>
+        <br><br>
+        
+        <h3>Question 3</h3>
+        <label for="q3">Question :</label>
+        <input type="text" id="q3" name="question_3" required>
+        <br><br>
+        
+        <label for="q3_a">Réponse A :</label>
+        <input type="text" id="q3_a" name="q3_reponse_a" required>
+        <br>
+        
+        <label for="q3_b">Réponse B :</label>
+        <input type="text" id="q3_b" name="q3_reponse_b" required>
+        <br>
+        
+        <label for="q3_c">Réponse C :</label>
+        <input type="text" id="q3_c" name="q3_reponse_c" required>
+        <br>
+        
+        <label for="q3_d">Réponse D :</label>
+        <input type="text" id="q3_d" name="q3_reponse_d" required>
+        <br>
+        
+        <label for="q3_correcte">Bonne réponse :</label>
+        <select id="q3_correcte" name="q3_correcte" required>
+            <option value="">-- Sélectionner --</option>
+            <option value="a">A</option>
+            <option value="b">B</option>
+            <option value="c">C</option>
+            <option value="d">D</option>
+        </select>
+        <br><br>
+        
+        <button type="submit">Créer le Quiz</button>
+        <button type="reset">Réinitialiser</button>
+        <br><br>
+        
+        <a href="/">Retour à l'accueil</a>
+    </form>
+</body>
+</html>
