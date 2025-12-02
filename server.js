@@ -28,8 +28,6 @@ await initDatabase();
 
 app.use(express.static('public'));
 
-
-
 app.get('/login', (req, res) => {
     res.sendFile('public/login.html', { root: '.' });
 });
@@ -82,7 +80,6 @@ app.post('/register', async (req, res) => {
 
 app.post('/login', async (req, res) => {
     try {
-        console.log('Login request body:', req.body);
         const { email, password } = req.body;
 
         if (!email || !password) {
