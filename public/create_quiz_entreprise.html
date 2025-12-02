@@ -11,101 +11,76 @@
 
     <div class="bg-white w-full max-w-3xl shadow-xl rounded-3xl p-10">
 
-        <!-- Bouton retour -->
         <a href="dashboard-entreprise.html" class="text-[#7B5BAB] flex items-center gap-2 mb-4">
             <span class="text-lg">←</span>
             Retour à la page d'accueil
         </a>
 
-        <!-- Logo -->
         <div class="flex justify-center mb-8">
-            <img src="/public/assets/img/img1.png" alt="Quizzeo" class="w-64">
+            <img src="/assets/img/img1.png" alt="Quizzeo" class="w-64">
         </div>
 
         <h1 class="text-3xl font-bold text-center text-[#1F1F3B] mb-10">
             Création d'un quiz (Entreprise)
         </h1>
-
-        <!-- Formulaire -->
         <form class="space-y-6">
 
-            <!-- Titre -->
             <div>
                 <label class="font-semibold block mb-1">Titre du quiz</label>
                 <input type="text" placeholder="Titre du quiz"
                        class="w-full p-3 border rounded-xl" required>
             </div>
 
-            <!-- Description -->
-            <div>
-                <label class="font-semibold block mb-1">Description</label>
-                <textarea placeholder="Objectifs, contenu du quiz..."
-                          class="w-full p-3 border rounded-xl" rows="3"></textarea>
-            </div>
 
-            <!-- Thème -->
-            <div>
-                <label class="font-semibold block mb-1">Thème</label>
-                <input type="text" placeholder="ex : Sécurité, RH, Management"
-                       class="w-full p-3 border rounded-xl" required>
-            </div>
+                <h2 class="text-2xl font-bold mb-4 text-[#1F1F3B]">Ajouter une question</h2>
 
-            <!-- Type de quiz -->
-            <div>
-                <label class="font-semibold block mb-1">Type de quiz</label>
-
-                <select class="w-full p-3 border rounded-xl" required>
-                    <option value="">-- Sélectionner --</option>
+                <!-- Choix type question -->
+                <label class="font-semibold block mb-1">Type de question</label>
+                <select id="questionType" class="w-full p-3 border rounded-xl mb-4" required>
+                    <option value="">-- Sélectionner le type --</option>
                     <option value="qcm">QCM (Choix multiples)</option>
-                    <option value="libre">Réponses libres</option>
-                    <option value="mixte">Mixte (QCM + Réponses libres)</option>
+                    <option value="libre">Réponse libre</option>
                 </select>
-            </div>
 
-            <!-- Département -->
-            <div>
-                <label class="font-semibold block mb-1">Département ciblé</label>
-                <input type="text" placeholder="ex : Tous, IT, RH, Vente"
-                       class="w-full p-3 border rounded-xl">
-            </div>
+                <div>
+                    <label class="font-semibold block mb-1">Texte de la question</label>
+                    <input type="text" id="questionText"
+                           placeholder="Ex : Quel est votre poste ?"
+                           class="w-full p-3 border rounded-xl mb-4">
+                </div>
 
-            <!-- Difficulté -->
-            <div>
-                <label class="font-semibold block mb-1">Niveau de difficulté</label>
+                <div id="qcmZone" class="hidden">
+                    <label class="font-semibold block mb-2">Options (4 réponses)</label>
 
-                <select class="w-full p-3 border rounded-xl">
-                    <option value="">-- Sélectionner --</option>
-                    <option value="debutant">Débutant</option>
-                    <option value="intermediaire">Intermédiaire</option>
-                    <option value="avance">Avancé</option>
-                </select>
-            </div>
+                    <input type="text" class="w-full p-3 border rounded-xl mb-2" placeholder="Réponse 1">
+                    <input type="text" class="w-full p-3 border rounded-xl mb-2" placeholder="Réponse 2">
+                    <input type="text" class="w-full p-3 border rounded-xl mb-2" placeholder="Réponse 3">
+                    <input type="text" class="w-full p-3 border rounded-xl mb-4" placeholder="Réponse 4">
+                </div>
 
-            <!-- Durée -->
-            <div>
-                <label class="font-semibold block mb-1">Durée (minutes)</label>
-                <input type="number" min="1" placeholder="ex : 45"
-                       class="w-full p-3 border rounded-xl">
-            </div>
+                <button type="button"
+                    class="w-full bg-[#F7B0C7] text-white font-semibold py-3 rounded-full text-lg shadow-md hover:opacity-90 transition">
+                    ➕ Ajouter cette question
+                </button>
+  
 
-            <!-- Obligatoire ? -->
-            <div>
-                <label class="font-semibold block mb-1">Quiz obligatoire ?</label>
 
-                <select class="w-full p-3 border rounded-xl" required>
-                    <option value="">-- Sélectionner --</option>
-                    <option value="oui">Oui</option>
-                    <option value="non">Non</option>
-                </select>
-            </div>
-
-            <!-- Bouton -->
             <button type="submit"
-                class="w-full bg-[#F7B0C7] text-white font-semibold py-3 rounded-full text-lg shadow-md hover:opacity-90 transition">
+                class="w-full mt-10 bg-[#F7B0C7] text-white font-semibold py-3 rounded-full text-lg shadow-md hover:opacity-90 transition">
                 Créer le quiz
             </button>
         </form>
     </div>
+
+
+    <script>
+        const typeSelect = document.getElementById("questionType");
+        const qcmZone = document.getElementById("qcmZone");
+
+        typeSelect.addEventListener("change", () => {
+            qcmZone.classList.toggle("hidden", typeSelect.value !== "qcm");
+        });
+    </script>
 
 </body>
 </html>
