@@ -1,5 +1,4 @@
 export function logger(req, res) {
-const DATE = new Date();
 const date = new Date();
 
 const jour = String(date.getDate()).padStart(2, '0');
