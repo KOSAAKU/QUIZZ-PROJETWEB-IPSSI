@@ -39,7 +39,7 @@ app.get('/register', (req, res) => {
 });
 
 app.get('/dashboard', (req, res) => {
-  res.sendFile('public/dashboard.html', { root: '.' });
+  res.sendFile('public/dashbadmin.html', { root: '.' });
 });
 
 app.post('/register', async (req, res) => {
