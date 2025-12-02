@@ -5,45 +5,45 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Inscription - Quizzeo</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <style> body { background: linear-gradient(135deg, #ffe8ed, #fff4d9); } </style>
+  <link rel="stylesheet" href="/assets/css/style.css">
 </head>
 <body class="min-h-screen flex items-center justify-center">
 
-    <div class="bg-white shadow-xl rounded-2xl p-10 w-full max-w-md border-t-8" style="border-color:#F26F7F;">
+    <div class="bg-white shadow-xl rounded-2xl p-10 w-full max-w-md border-t-8 border-primary">
         
         <!-- Logo -->
-        <img src="/public/assets/img/img1.png" alt="QUIZZEO" class="mx-auto mb-6 w-56">
+        <img src="/assets/img/img1.png" alt="QUIZZEO" class="mx-auto mb-6 w-56">
 
         <h2 class="text-3xl font-bold text-center mb-6 text-gray-700">Inscription</h2>
 
     <form id="registerForm" class="space-y-5">
       <div>
         <label class="text-gray-700 font-medium">Nom</label>
-        <input id="name" name="name" type="text" required class="w-full mt-1 p-3 rounded-xl bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2" style="--tw-ring-color:#A48AD6;">
+        <input id="name" name="name" type="text" required class="w-full mt-1 p-3 rounded-xl bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 ring-secondary">
       </div>
 
       <div>
         <label class="text-gray-700 font-medium">Email</label>
-        <input id="email" name="email" type="email" required class="w-full mt-1 p-3 rounded-xl bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2" style="--tw-ring-color:#A48AD6;">
+        <input id="email" name="email" type="email" required class="w-full mt-1 p-3 rounded-xl bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 ring-secondary">
       </div>
 
       <div>
         <label class="text-gray-700 font-medium">Mot de passe</label>
-        <input id="password" name="password" type="password" required class="w-full mt-1 p-3 rounded-xl bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2" style="--tw-ring-color:#A48AD6;">
+        <input id="password" name="password" type="password" required class="w-full mt-1 p-3 rounded-xl bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 ring-secondary">
       </div>
 
       <div>
         <label class="text-gray-700 font-medium">Confirmer le mot de passe</label>
-        <input id="password2" name="password2" type="password" required class="w-full mt-1 p-3 rounded-xl bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2" style="--tw-ring-color:#A48AD6;">
+        <input id="password2" name="password2" type="password" required class="w-full mt-1 p-3 rounded-xl bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 ring-secondary">
       </div>
 
-      <button id="submitBtn" type="submit" class="w-full py-3 mt-4 rounded-xl text-white font-semibold text-lg shadow-lg hover:opacity-90 transition" style="background-color:#F26F7F;">
+      <button id="submitBtn" type="submit" class="w-full py-3 mt-4 rounded-xl font-semibold text-lg shadow-lg transition btn-primary">
         S'inscrire
       </button>
     </form>
 
     <p class="text-center text-gray-700 text-sm mt-5">
-      Déjà un compte ? <a href="login.html" class="font-semibold" style="color:#A48AD6;">Se connecter</a>
+      Déjà un compte ? <a href="login.html" class="link">Se connecter</a>
     </p>
   </div>
 
