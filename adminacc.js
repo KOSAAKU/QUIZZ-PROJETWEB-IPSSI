@@ -1,4 +1,4 @@
-import { sequelize } from "./server.js";
+import { sequelize } from "./config/database.js";
 import bcrypt from "bcrypt";
 
 const hashedAdminPassword = await bcrypt.hash("adminpassword", 10);

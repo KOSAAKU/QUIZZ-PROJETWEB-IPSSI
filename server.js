@@ -6,6 +6,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 import { sequelize } from './config/database.js';
+import './seed.js';
 import { loginUser } from './controllers/AuthController.js';
 import { registerUser } from './controllers/UserController.js';
 import { verifyToken } from './controllers/TokenController.js';
