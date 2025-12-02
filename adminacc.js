@@ -3,8 +3,8 @@ import bcrypt from "bcrypt";
 
 const hashedAdminPassword = await bcrypt.hash("adminpassword", 10);
 sequelize.query(`
-    INSERT INTO users (fullname, email, password, role, actif) VALUES
-    ('Admin User', 'admin@quizzeo.fr', :password, 'admin', true)
+    INSERT INTO users (fullname, email, password, role, actif, createdAt, updatedAt) VALUES
+    ('Admin User', 'admin@quizzeo.fr', :password, 'admin', true, NOW(), NOW())
     `,
     {
         replacements: { password: hashedAdminPassword }
