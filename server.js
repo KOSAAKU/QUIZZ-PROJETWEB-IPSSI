@@ -15,13 +15,6 @@ app.use((req, res, next) => {
     next();
 });
 
-import { logger } from './controllers/LoggerController.js';
-app.use((req, res, next) => {
-    console.log('Request received:');
-    logger(req, res);
-    next();
-});
-
 import { sequelize } from './config/database.js';
 import './seed.js';
 import { loginUser } from './controllers/AuthController.js';
@@ -304,7 +297,7 @@ app.get('/quizzes', async (req, res) => {
             };
         });
 
-        return res.status(200).json({ quizzs: formattedQuizzes });
+        return res.status(200).json({ quizzes: formattedQuizzes });
     } catch (error) {
         console.error('Error fetching quizzes:', error);
         return res.status(500).json({
