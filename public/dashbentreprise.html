@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Entreprise - Quizzeo</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/assets/css/style.css">
+</head>
+<body class="bg-gray-100">
+
+    <header class="bg-white shadow-md">
+        <nav class="container mx-auto px-6 py-3 flex justify-between items-center">
+            <a href="/" class="text-2xl font-bold text-gray-800"> <img src="/assets/img/img1.png" alt=""> </a>
+            <div>
+                <a href="/logout.html" class="px-4 py-2 leading-none rounded-lg btn-secondary text-white">Déconnexion</a>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mx-auto px-6 py-12">
+        <h1 class="text-3xl font-bold text-gray-800 mb-6">Dashboard Entreprise</h1>
+            <!-- Section Création de Quiz -->
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">Création de Quiz</h2>
+                <a href="/quizz/create" class="btn-primary w-full py-2 rounded-lg text-center inline-block">Créer un nouveau quiz</a>
+                 <div class="overflow-x-auto mt-4">
+                    <table class="w-full text-left">
+                        <thead>
+                            <tr class="bg-gray-200">
+                                <th class="p-3">#</th>
+                                <th class="p-3">Quizz</th>
+                                <th class="p-3">Participants</th>
+                                <th class="p-3">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Quiz rows here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <br />
+
+             <!-- Section Statistiques -->
+            <div class="bg-white rounded-lg shadow-lg p-6 lg:col-span-2">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">Statistiques</h2>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 text-center">
+                    <div class="bg-green-100 p-4 rounded-lg">
+                        <p class="text-3xl font-bold">0</p>
+                        <p class="text-gray-600">Quiz Créés</p>
+                    </div>
+                    <div class="bg-yellow-100 p-4 rounded-lg">
+                        <p class="text-3xl font-bold">0</p>
+                        <p class="text-gray-600">Quiz Complétés</p>
+                    </div>
+                     <div class="bg-purple-100 p-4 rounded-lg">
+                        <p class="text-3xl font-bold">-</p>
+                        <p class="text-gray-600">Score Moyen</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-white mt-16 py-6">
+        <div class="container mx-auto px-6 text-center text-gray-600">
+            <p>&copy; 2025 Quizzeo - Tous droits réservés</p>
+        </div>
+    </footer>
+</body>
+</html>

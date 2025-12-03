@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Admin - Quizzeo</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/assets/css/style.css">
+</head>
+<body class="bg-gray-100">
+
+    <header class="bg-white shadow-md">
+        <nav class="container mx-auto px-6 py-3 flex justify-between items-center">
+            <a href="/" class="text-2xl font-bold text-gray-800">🎯 Quizzeo Admin</a>
+            <div>
+                <a href="/logout.html" class="px-4 py-2 leading-none rounded-lg btn-secondary text-white">Déconnexion</a>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mx-auto px-6 py-12">
+        <h1 class="text-3xl font-bold text-gray-800 mb-6">Dashboard Admin</h1>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Section Gestion des Utilisateurs -->
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">Gestion des Utilisateurs</h2>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead>
+                            <tr class="bg-gray-200">
+                                <th class="p-3">ID</th>
+                                <th class="p-3">Nom</th>
+                                <th class="p-3">Email</th>
+                                <th class="p-3">Rôle</th>
+                                <th class="p-3">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- User rows here -->
+                        </tbody>
+                    </table>
+                </div>
+                 <a href="#" class="mt-4 inline-block btn-primary text-white py-2 px-4 rounded-lg">Ajouter un utilisateur</a>
+            </div>
+
+            <!-- Section Gestion des Quiz -->
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">Gestion des Quiz</h2>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead>
+                            <tr class="bg-gray-200">
+                                <th class="p-3">ID</th>
+                                <th class="p-3">Titre</th>
+                                <th class="p-3">Auteur</th>
+                                <th class="p-3">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Quiz rows here -->
+                        </tbody>
+                    </table>
+                </div>
+                <a href="#" class="mt-4 inline-block btn-primary text-white py-2 px-4 rounded-lg">Ajouter un quiz</a>
+            </div>
+
+            <!-- Section Statistiques -->
+            <div class="bg-white rounded-lg shadow-lg p-6 lg:col-span-2">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">Statistiques</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+                    <div class="bg-blue-100 p-4 rounded-lg">
+                        <p class="text-3xl font-bold">0</p>
+                        <p class="text-gray-600">Utilisateurs</p>
+                    </div>
+                    <div class="bg-green-100 p-4 rounded-lg">
+                        <p class="text-3xl font-bold">0</p>
+                        <p class="text-gray-600">Quiz</p>
+                    </div>
+                    <div class="bg-yellow-100 p-4 rounded-lg">
+                        <p class="text-3xl font-bold">0</p>
+                        <p class="text-gray-600">Questions</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-white mt-16 py-6">
+        <div class="container mx-auto px-6 text-center text-gray-600">
+            <p>&copy; 2025 Quizzeo - Tous droits réservés</p>
+        </div>
+    </footer>
+    <script>
+        let users = [];
+        fetch('/users', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            credentials: 'include'
+            })
+            .then(response => {
+                if (response.status === 401) {
+                    alert('Session expirée, veuillez vous reconnecter');
+                    window.location.href = '/login.html';
+                    return;
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (!data) return;
+
+                users = data.users;
+                const tbody = document.querySelector('table tbody');
+                users.forEach(user => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${user.id}</td>
+                        <td>${user.fullname}</td>
+                        <td>${user.email}</td>
+                        <td>${user.role}</td>
+                        <td>
+                            <form method="POST" action="/admin/users/delete" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?');">
+                                <input type="hidden" name="id" value="${user.id}">
+                                <button type="submit">Supprimer</button>
+                            </form>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            })
+            .catch(error => {
+                console.error('Erreur lors de la récupération des utilisateurs:', error);
+                alert('Erreur lors de la récupération des utilisateurs');
+            });
+    </script>
+</body>
+</html>

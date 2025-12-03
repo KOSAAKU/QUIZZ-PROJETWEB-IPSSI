@@ -1,0 +1,34 @@
+body {
+    background: linear-gradient(135deg, #ffe8ed, #fff4d9);
+}
+
+.btn-primary {
+    background-color: #F26F7F;
+    color: white;
+}
+
+.btn-primary:hover {
+    opacity: 0.9;
+}
+
+.btn-secondary {
+    background-color: #A48AD6;
+    color: white;
+}
+
+.btn-secondary:hover {
+    opacity: 0.9;
+}
+
+.link {
+    color: #A48AD6;
+    font-weight: 600;
+}
+
+.border-primary {
+    border-color: #F26F7F;
+}
+
+.ring-secondary {
+    --tw-ring-color: #A48AD6;
+}
