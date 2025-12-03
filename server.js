@@ -18,7 +18,7 @@ app.use((req, res, next) => {
 import { sequelize } from './config/database.js';
 import './seed.js';
 import { loginUser } from './controllers/AuthController.js';
-import { registerUser } from './controllers/UserController.js';
+import { getUserById, registerUser } from './controllers/UserController.js';
 import { verifyToken } from './controllers/TokenController.js';
 
 // Fonction async pour initialiser la base de données
@@ -40,16 +40,73 @@ await initDatabase();
 
 app.use(express.static('public'));
 
-app.get('/login', (req, res) => {
+app.get('/login', async (req, res) => {
     res.sendFile('public/login.html', { root: '.' });
 });
 
-app.get('/register', (req, res) => {
+app.get('/register', async (req, res) => {
   res.sendFile('public/register.html', { root: '.' });
 });
 
-app.get('/dashboard', (req, res) => {
-  res.sendFile('public/dashbadmin.html', { root: '.' });
+app.get('/dashboard', async (req, res) => {
+    const cookies = req.cookies;
+    
+    if (!cookies.token) {
+        return res.redirect('/login');
+    }
+
+    const token = JSON.parse(cookies.token);
+
+    const decoded = await verifyToken(token);
+    
+    if (!decoded) {
+        return res.redirect('/login');
+    }
+
+    const user = await getUserById(decoded.userId);
+    
+    if (!user) {
+        return res.redirect('/login');
+    }
+    
+    switch (user.role) {
+        case 'admin':
+            console.log('Dashboard - sending admin dashboard');
+            return res.sendFile('public/dashbadmin.html', { root: '.' });
+        case 'ecole':
+            console.log('Dashboard - sending ecole dashboard');
+            return res.sendFile('public/dashbecole.html', { root: '.' });
+        case 'entreprise':
+            console.log('Dashboard - sending entreprise dashboard');
+            return res.sendFile('public/dashbentreprise.html', { root: '.' });
+        default:
+            console.log('Dashboard - invalid role, redirecting to login');
+            return res.redirect('/login');
+    }
+});
+
+app.get('/quizz/create', async (req, res) => {
+    const cookies = req.cookies;
+    if (!cookies.token) {
+        return res.redirect('/login');
+    }
+
+    const token = JSON.parse(cookies.token);
+    const decoded = await verifyToken(token);
+    if (!decoded) {
+        return res.redirect('/login');
+    }
+
+    const user = await getUserById(decoded.userId);
+    if (!user) {
+        return res.redirect('/login');
+    }
+
+    if (user.role !== 'ecole' && user.role !== 'entreprise') {
+        return res.redirect('/login');
+    }
+
+    return res.sendFile('public/create.html', { root: '.' });
 });
 
 app.post('/register', async (req, res) => {
@@ -138,7 +195,6 @@ app.post('/login', async (req, res) => {
 
 app.get('/users', async (req, res) => {
     try {
-        // Récupérer le token depuis les cookies
         const tokenCookie = req.cookies.token;
 
         if (!tokenCookie) {
@@ -190,10 +246,58 @@ app.get('/users', async (req, res) => {
 
 app.get('/quizzes', async (req, res) => {
     try {
-        const [quizzes] = await sequelize.query(
-            'SELECT * FROM quizzs'
+        // check if the user is authenticated
+        const tokenCookie = req.cookies.token;
+        if (!tokenCookie) {
+            return res.status(401).json({
+                error: 'Token manquant',
+                message: 'Aucun token d\'authentification fourni'
+            });
+        }
+
+        const token = JSON.parse(tokenCookie);
+        const decoded = await verifyToken(token);
+        if (!decoded) {
+            return res.status(401).json({
+                error: 'Token invalide',
+                message: 'Le token fourni est invalide'
+            });
+        }
+
+        const [userRows] = await sequelize.query(
+            `SELECT id, role FROM users WHERE id = :userId AND actif = true`,
+            {
+                replacements: { userId: decoded.userId }
+            }
         );
-        return res.status(200).json({ quizzes });
+        if (!userRows || userRows.length === 0) {
+            return res.status(403).json({
+                error: 'Accès refusé',
+                message: 'Vous n\'avez pas les droits nécessaires pour accéder à cette ressource',
+            });
+        }
+
+        const ownerId = userRows[0].id;
+
+        const [quizzes] = await sequelize.query(
+            'SELECT * FROM quizzs WHERE ownerId = :ownerId',
+            {
+                replacements: { ownerId: ownerId } // TODO: remplacer par l'ID de l'utilisateur connecté
+            }
+        );
+
+        let formattedQuizzes = quizzes.map((quiz) => {
+            return {
+                ...quiz,
+                questions: Array.isArray(quiz.questions) 
+                    ? quiz.questions.length 
+                    : (typeof quiz.questions === 'string' 
+                        ? JSON.parse(quiz.questions).length 
+                        : 0)
+            };
+        });
+
+        return res.status(200).json({ quizzs: formattedQuizzes });
     } catch (error) {
         console.error('Error fetching quizzes:', error);
         return res.status(500).json({
@@ -206,13 +310,16 @@ app.get('/quizzes', async (req, res) => {
 app.post('/quizzes', async (req, res) => {
     try {
         // check if the user is authenticated AND has 'ecole' or 'entreprise' role
-        const token = req.headers.authorization?.split(' ')[1];
-        if (!token) {
+        const tokenCookie = req.cookies.token;
+
+        if (!tokenCookie) {
             return res.status(401).json({
                 error: 'Token manquant',
                 message: 'Aucun token d\'authentification fourni'
             });
         }
+
+        const token = JSON.parse(tokenCookie);
         const decoded = await verifyToken(token);
         if (!decoded) {
             return res.status(401).json({
@@ -246,13 +353,23 @@ app.post('/quizzes', async (req, res) => {
                 message: 'Name and questions are required (send JSON body with Content-Type: application/json)'
             });
         }
-        const result = await sequelize.query(
-            'INSERT INTO quizzs (name, questions, ownerId, status, createdAt, updatedAt) VALUES (:name, :questions, :ownerId, \'pending\', NOW(), NOW()) RETURNING id',
-             { replacements: { name, questions, ownerId } }
+
+        // Postgres / pg expects a JSON string for JSON columns — stringify it
+        const questionsJson = JSON.stringify(questions);
+
+        const [result] = await sequelize.query(
+            // on force le cast en JSON côté SQL pour être sûr (:questions::json)
+            'INSERT INTO quizzs (name, questions, ownerId, status, createdAt, updatedAt) VALUES (:name, :questions, :ownerId, \'pending\', NOW(), NOW())',
+            { replacements: { name, questions: questionsJson, ownerId }}
         );
+
+        // result[0] contient les rows retournées ; récupérer l'id en gardant la compatibilité
+        const insertedRows = result[0];
+        const insertedId = insertedRows?.id ?? null;
+
         return res.status(201).json({
             message: 'Quizz created successfully',
-            quizz: { id: result[0].id, name, questions, ownerId }
+            quizz: { id: insertedId, name, questions, ownerId }
         });
     } catch (error) {
         console.error('Error creating quizz:', error);

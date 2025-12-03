@@ -16,22 +16,22 @@ export async function registerUser(fullname, email, password, role, actif) {
 
 export async function getUserById(userId) {
     const result = await sequelize.query(
-        'SELECT id, fullname, email, role, actif FROM users WHERE id = $1',
-        [userId]
+        'SELECT id, fullname, email, role, actif FROM users WHERE id = :userId',
+        { replacements: { userId }}
     );
-    return result.length > 0 ? result[0] : null;
+    return result.length > 0 ? result[0][0] : null;
 }
 
 export async function disableUser(userId) {
     await sequelize.query(
-        'UPDATE users SET actif = false WHERE id = $1',
-        [userId]
+        'UPDATE users SET actif = false WHERE id = :userId',
+        { replacements: { userId }}
     );
 }
 
 export async function enableUser(userId) {
     await sequelize.query(
-        'UPDATE users SET actif = true WHERE id = $1',
-        [userId]
+        'UPDATE users SET actif = true WHERE id = :userId',
+        { replacements: { userId }}
     );
 }
