@@ -11,7 +11,6 @@ export function logger(req, res) {
 
   const dateFormatee = `${jour}/${mois}/${annee} - ${heures}:${minutes}:${secondes}`;
 
-
   const IP = req.ip;
   const METHOD = req.method;
   const URL = req.originalUrl;
