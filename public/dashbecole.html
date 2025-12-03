@@ -31,7 +31,8 @@
                             <tr class="bg-gray-200">
                                 <th class="p-3">#</th>
                                 <th class="p-3">Titre</th>
-                                <th class="p-3">Matière</th>
+                                <th class="p-3">Questions</th>
+                                <th class="p-3">Participants</th>
                                 <th class="p-3">Statut</th>
                                 <th class="p-3">Actions</th>
                             </tr>
@@ -117,11 +118,11 @@
                         quizzes.forEach((quiz, index) => {
                             const row = document.createElement('tr');
                             const title = quiz.name || quiz.title || 'Sans titre';
-                            const participants = quiz.participants ?? '-';
                             row.innerHTML = `
                                 <td class="p-3">${index + 1}</td>
                                 <td class="p-3">${title}</td>
-                                <td class="p-3">${participants}</td>
+                                <td class="p-3">${quiz.questions ?? '-'}</td>
+                                <td class="p-3">${quiz.answers ?? '0'}</td>
                                 <td class="p-3">
                                     <span class="${quiz.status === 'pending' ? 'border-2 border-yellow-500 bg-yellow-50' : quiz.status === 'started' ? 'border-2 border-blue-500 bg-blue-50' : quiz.status === 'finish' ? 'border-2 border-green-500 bg-green-50' : 'border-2 border-gray-500 bg-gray-50'} px-3 py-1 rounded">
                                         ${quiz.status}

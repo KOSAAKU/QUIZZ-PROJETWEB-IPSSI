@@ -311,6 +311,165 @@ app.get('/quizzes', async (req, res) => {
     }
 });
 
+app.get('/quizz/:id/toggle', async (req, res) => {
+    try {
+        // check the user is authenticated
+        const tokenCookie = req.cookies.token;
+        if (!tokenCookie) {
+            return res.status(401).json({
+                error: 'Token manquant',
+                message: 'Aucun token d\'authentification fourni'
+            });
+        }
+
+        const token = JSON.parse(tokenCookie);
+        const decoded = await verifyToken(token);
+        if (!decoded) {
+            return res.status(401).json({
+                error: 'Token invalide',
+                message: 'Le token fourni est invalide'
+            });
+        }
+
+        const quizId = req.params.id;
+
+        // get the quiz
+        const [quizRows] = await sequelize.query(
+            'SELECT status FROM quizzs WHERE id = :quizId AND ownerId = :ownerId LIMIT 1',
+            {
+                replacements: { quizId, ownerId: decoded.userId }
+            }
+        );
+
+        if (!quizRows || quizRows.length === 0) {
+            return res.status(404).json({
+                error: 'Not Found',
+                message: 'Quizz not found'
+            });
+        }
+
+        const currentStatus = quizRows[0].status;
+        switch (currentStatus) {
+            case 'pending':
+                // change to started
+                await sequelize.query(
+                    "UPDATE quizzs SET status = 'started' WHERE id = :quizId",
+                    { replacements: { quizId }}
+                );
+                break;
+            case 'started':
+                // change to finish
+                await sequelize.query(
+                    "UPDATE quizzs SET status = 'finish' WHERE id = :quizId",
+                    { replacements: { quizId }}
+                );
+                break;
+            default:
+                return res.status(400).json({
+                    error: 'Invalid operation',
+                    message: `Cannot toggle quiz with status '${currentStatus}'`
+                });
+        }
+        return res.status(200).json({ message: 'Quiz status updated successfully' });
+    } catch (error) {
+        console.error('Error fetching quiz:', error);
+        return res.status(500).json({
+            error: 'Internal server error',
+            message: error.message
+        });
+    }
+});
+
+app.delete('/quizz/:id/delete', async (req, res) => {
+    try {
+        // check the user is authenticated
+        const tokenCookie = req.cookies.token;
+        if (!tokenCookie) {
+            return res.status(401).json({
+                error: 'Token manquant',
+                message: 'Aucun token d\'authentification fourni'
+            });
+        }
+
+        const token = JSON.parse(tokenCookie);
+        const decoded = await verifyToken(token);
+        if (!decoded) {
+            return res.status(401).json({
+                error: 'Token invalide',
+                message: 'Le token fourni est invalide'
+            });
+        }
+
+        const quizId = req.params.id;
+
+        // delete the quiz
+        const [result] = await sequelize.query(
+            'DELETE FROM quizzs WHERE id = :quizId AND ownerId = :ownerId',
+            {
+                replacements: { quizId, ownerId: decoded.userId }
+            }
+        );
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({
+                error: 'Not Found',
+                message: 'Quizz not found or you do not have permission to delete it'
+            });
+        }
+        return res.status(200).json({ message: 'Quiz deleted successfully' });
+    } catch (error) {
+        console.error('Error deleting quiz:', error);
+        return res.status(500).json({
+            error: 'Internal server error',
+            message: error.message
+        });
+    }
+});
+
+app.get('/quizzes/:id', async (req, res) => {
+    try {
+        const quizId = req.params.id;
+        const [quizRows] = await sequelize.query(
+            "SELECT * FROM quizzs WHERE id = :quizId AND status = 'actif' LIMIT 1",
+            {
+                replacements: { quizId }
+            }
+        );
+        if (!quizRows || quizRows.length === 0) {
+            return res.status(404).json({
+                error: 'Not Found',
+                message: 'Quizz not found'
+            });
+        }
+        const quiz = quizRows[0];
+        
+        // Parse questions if stored as string
+        let questions = typeof quiz.questions === 'string' 
+            ? JSON.parse(quiz.questions) 
+            : quiz.questions;
+        
+        // Remove answers from QCM questions
+        if (Array.isArray(questions)) {
+            questions = questions.map(q => {
+            if (q.type === 'qcm') {
+                const { answer, ...questionWithoutAnswer } = q;
+                return questionWithoutAnswer;
+            }
+            return q;
+            });
+        }
+        
+        quiz.questions = questions;
+        return res.status(200).json({ quiz });
+    } catch (error) {
+        console.error('Error fetching quiz:', error);
+        return res.status(500).json({
+            error: 'Internal server error',
+            message: error.message
+        });
+    }
+});
+
 app.post('/quizzes', async (req, res) => {
     try {
         // check if the user is authenticated AND has 'ecole' or 'entreprise' role
