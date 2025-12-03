@@ -7,16 +7,12 @@
 
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/assets/css/style.css">
 
-    <style>
-        body {
-            background: linear-gradient(135deg, #ffe8ed, #fff4d9);
-        }
-    </style>
 </head>
 <body class="min-h-screen flex items-center justify-center">
 
-    <div class="bg-white shadow-xl rounded-2xl p-10 w-full max-w-md border-t-8" style="border-color:#F26F7F;">
+    <div class="bg-white shadow-xl rounded-2xl p-10 w-full max-w-md border-t-8 border-primary">
         
         <!-- Logo -->
         <img src="/assets/img/img1.png" alt="QUIZZEO" class="mx-auto mb-6 w-56">
@@ -26,16 +22,15 @@
         <form class="space-y-5">
             <div>
                 <label class="text-gray-700 font-medium">Email</label>
-                <input id="email" type="email" class="w-full mt-1 p-3 rounded-xl bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2" style="--tw-ring-color:#A48AD6;">
+                <input id="email" type="email" class="w-full mt-1 p-3 rounded-xl bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 ring-secondary">
             </div>
 
             <div>
                 <label class="text-gray-700 font-medium">Mot de passe</label>
-                <input id="password" type="password" class="w-full mt-1 p-3 rounded-xl bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2" style="--tw-ring-color:#A48AD6;">
+                <input id="password" type="password" class="w-full mt-1 p-3 rounded-xl bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 ring-secondary">
             </div>
             <button 
-                class=" w-full py-3 mt-4 rounded-xl text-white font-semibold text-lg shadow-lg hover:opacity-90 transition"
-                style="background-color:#F26F7F;"
+                class=" w-full py-3 mt-4 rounded-xl font-semibold text-lg shadow-lg transition btn-primary"
                 onclick="login()">
                 Se connecter
             </button>
@@ -44,7 +39,7 @@
 
         <p class="text-center text-gray-700 text-sm mt-5">
             Pas de compte ?
-            <a href="register.html" class="font-semibold" style="color:#A48AD6;">
+            <a href="register.html" class="link">
                 S'inscrire
             </a>
         </p>

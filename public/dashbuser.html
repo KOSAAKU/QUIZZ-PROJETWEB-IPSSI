@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Utilisateur - Quizzeo</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/assets/css/style.css">
+</head>
+<body class="bg-gray-100">
+
+    <header class="bg-white shadow-md">
+        <nav class="container mx-auto px-6 py-3 flex justify-between items-center">
+            <a href="/" class="text-2xl font-bold text-gray-800">🎯 Quizzeo</a>
+            <div>
+                <a href="/profile" class="px-4 py-2 leading-none rounded-lg text-gray-700 hover:bg-gray-200">Mon Profil</a>
+                <a href="/logout.html" class="px-4 py-2 leading-none rounded-lg btn-secondary text-white">Déconnexion</a>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mx-auto px-6 py-12">
+        <h1 class="text-3xl font-bold text-gray-800 mb-6">Dashboard Utilisateur</h1>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <!-- Section Amis -->
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">Mes Amis</h2>
+                <form method="GET" action="/user/friends/search" class="space-y-4">
+                    <input type="text" name="search" placeholder="Rechercher un ami..." class="w-full p-2 rounded-lg border border-gray-300">
+                    <button type="submit" class="w-full btn-primary py-2 rounded-lg">Chercher</button>
+                </form>
+                <div class="mt-4">
+                    <h3 class="font-bold">Ma liste d'amis</h3>
+                    <ul class="mt-2">
+                        <!-- Friend list items here -->
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Section Créer un Quiz -->
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">Créer un Quiz</h2>
+                <a href="/create.html" class="btn-primary w-full py-2 rounded-lg text-center inline-block">Créer un nouveau quiz</a>
+            </div>
+
+            <!-- Section Mes Quiz -->
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">Mes Quiz</h2>
+                <!-- List of user's quizzes -->
+            </div>
+
+            <!-- Section Quiz Disponibles -->
+            <div class="bg-white rounded-lg shadow-lg p-6 md:col-span-2">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">Quiz Disponibles</h2>
+                <!-- Tabs for friends' quizzes and public quizzes -->
+            </div>
+
+            <!-- Section Mes Résultats -->
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">Mes Résultats</h2>
+                <!-- History of quizzes taken -->
+            </div>
+            
+            <!-- Section Défis -->
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">Défis</h2>
+                <!-- Challenges section -->
+            </div>
+
+            <!-- Section Statistiques -->
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">Statistiques</h2>
+                <!-- User stats -->
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-white mt-16 py-6">
+        <div class="container mx-auto px-6 text-center text-gray-600">
+            <p>&copy; 2025 Quizzeo - Tous droits réservés</p>
+        </div>
+    </footer>
+</body>
+</html>
