@@ -105,8 +105,12 @@ app.get('/quizz/create', async (req, res) => {
     if (user.role !== 'ecole' && user.role !== 'entreprise') {
         return res.redirect('/login');
     }
-
-    return res.sendFile('public/create.html', { root: '.' });
+    if (user.role === 'entreprise') {
+        return res.sendFile('public/create_quiz_entreprise.html', { root: '.' });
+    } else if (user.role === 'ecole') {
+        return res.sendFile('public/create_quiz_ecole.html', { root: '.' });
+    }
+    return res.redirect('/login');
 });
 
 app.post('/register', async (req, res) => {
