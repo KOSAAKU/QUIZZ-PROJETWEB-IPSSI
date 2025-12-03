@@ -16,33 +16,89 @@
 
             <form id="quiz-form" class="space-y-8">
                 
-                <!-- Section Informations Générales -->
+                <!-- Informations générales -->
                 <div class="space-y-5">
                     <div>
-                        <label for="titre" class="text-lg font-medium text-gray-700">Titre du Quiz :</label>
-                        <input type="text" id="titre" name="titre" required class="w-full text-lg mt-1 p-4 rounded-xl bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 ring-secondary">
+                        <label class="text-lg font-medium text-gray-700">Titre du Quiz :</label>
+                        <input type="text" id="titre" required 
+                               class="w-full text-lg mt-1 p-4 rounded-xl bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 ring-secondary">
                     </div>
                     
                     <div>
-                        <label for="description" class="text-lg font-medium text-gray-700">Description :</label>
-                        <textarea id="description" name="description" rows="3" class="w-full text-lg mt-1 p-4 rounded-xl bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 ring-secondary"></textarea>
+                        <label class="text-lg font-medium text-gray-700">Description :</label>
+                        <textarea id="description" rows="3"
+                                  class="w-full text-lg mt-1 p-4 rounded-xl bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 ring-secondary"></textarea>
                     </div>
                 </div>
 
                 <hr class="my-10">
 
-                <!-- Section Questions -->
-                <h2 class="text-3xl font-bold text-gray-700 mb-6">Questions à Réponse Libre</h2>
-                <div id="questions-container" class="space-y-6">
-                    <!-- Les questions seront ajoutées ici par JS -->
+                <!-- Section ajout question -->
+                <h2 class="text-3xl font-bold text-gray-700 mb-6">Ajouter une Question</h2>
+
+                <div class="space-y-5">
+
+                    <div>
+                        <label class="text-lg font-medium text-gray-700">Type de question :</label>
+                        <select id="type-question" class="w-full p-3 mt-1 rounded-xl border border-gray-300 bg-gray-100">
+                            <option value="">-- Choisir --</option>
+                            <option value="libre">Réponse libre</option>
+                            <option value="qcm">QCM (choix multiples)</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="text-lg font-medium text-gray-700">Énoncé de la question :</label>
+                        <textarea id="question-text" rows="2"
+                                  class="w-full text-lg mt-1 p-3 rounded-xl bg-white border border-gray-300 
+                                  focus:outline-none focus:ring-2 ring-secondary"></textarea>
+                    </div>
+
+                    <!-- Zone QCM -->
+                    <div id="qcm-zone" class="hidden bg-gray-50 border border-gray-200 rounded-xl p-6">
+                        <h3 class="text-xl font-semibold text-gray-700 mb-4">Options du QCM</h3>
+
+                        <div class="space-y-4">
+                            <div class="flex items-center gap-3">
+                                <input type="radio" name="correct" value="0">
+                                <input type="text" class="option w-full p-3 rounded-xl border bg-white" placeholder="Réponse 1">
+                            </div>
+
+                            <div class="flex items-center gap-3">
+                                <input type="radio" name="correct" value="1">
+                                <input type="text" class="option w-full p-3 rounded-xl border bg-white" placeholder="Réponse 2">
+                            </div>
+
+                            <div class="flex items-center gap-3">
+                                <input type="radio" name="correct" value="2">
+                                <input type="text" class="option w-full p-3 rounded-xl border bg-white" placeholder="Réponse 3">
+                            </div>
+
+                            <div class="flex items-center gap-3">
+                                <input type="radio" name="correct" value="3">
+                                <input type="text" class="option w-full p-3 rounded-xl border bg-white" placeholder="Réponse 4">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bouton ajouter question -->
+                    <button type="button" id="btn-add"
+                            class="py-3 px-6 rounded-xl font-semibold text-lg shadow-lg transition bg-green-500 hover:bg-green-600 text-white">
+                        + Ajouter cette question
+                    </button>
                 </div>
 
-                <!-- Boutons d'action -->
-                <div class="flex justify-between items-center mt-10">
-                    <button type="button" onclick="addQuestion()" class="py-3 px-6 rounded-xl font-semibold text-lg shadow-lg transition bg-green-500 hover:bg-green-600 text-white">
-                        + Ajouter une question
-                    </button>
-                    <button type="submit" class="py-3 px-8 rounded-xl font-semibold text-xl shadow-lg transition btn-primary">
+
+                <hr class="my-10">
+
+                <!-- LISTE DES QUESTIONS AJOUTÉES -->
+                <h2 class="text-3xl font-bold text-gray-700 mb-6">Questions ajoutées</h2>
+                <div id="questions-container" class="space-y-6"></div>
+
+                <!-- Bouton final -->
+                <div class="flex justify-center mt-10">
+                    <button type="submit" 
+                            class="py-3 px-8 rounded-xl font-semibold text-xl shadow-lg transition btn-primary">
                         Créer le Quiz
                     </button>
                 </div>
@@ -50,95 +106,126 @@
         </div>
     </div>
 
-    <script>
-        let questionCount = 0;
 
-        function addQuestion() {
-            questionCount++;
-            const container = document.getElementById('questions-container');
-            const questionHTML = `
-                <div id="question-${questionCount}" class="bg-gray-50 border border-gray-200 rounded-xl p-6">
-                    <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-xl font-bold text-gray-700">Question ${questionCount}</h3>
-                        <button type="button" onclick="deleteQuestion(${questionCount})" class="text-red-500 hover:text-red-700 font-bold text-2xl">&times;</button>
-                    </div>
-                    
-                    <div>
-                        <label for="q${questionCount}-text" class="text-lg font-medium text-gray-700">Énoncé :</label>
-                        <textarea id="q${questionCount}-text" class="question-text w-full text-lg mt-1 p-3 rounded-xl bg-white border border-gray-300 focus:outline-none focus:ring-2 ring-secondary" rows="2" required></textarea>
-                    </div>
-                    <div class="mt-4">
-                        <label for="q${questionCount}-answer" class="text-lg font-medium text-gray-700">Réponse attendue (optionnel) :</label>
-                        <textarea id="q${questionCount}-answer" class="libre-answer w-full text-lg mt-1 p-3 rounded-xl bg-white border border-gray-300 focus:outline-none focus:ring-2 ring-secondary" rows="3"></textarea>
-                    </div>
-                </div>
-            `;
-            container.insertAdjacentHTML('beforeend', questionHTML);
+<script>
+let questions = [];
+let index = 0;
+
+document.getElementById("type-question").addEventListener("change", function () {
+    document.getElementById("qcm-zone").classList.toggle("hidden", this.value !== "qcm");
+});
+
+document.getElementById("btn-add").addEventListener("click", function () {
+    const type = document.getElementById("type-question").value;
+    const text = document.getElementById("question-text").value;
+
+    if (!type || !text.trim()) {
+        alert("Veuillez remplir le type et l’énoncé.");
+        return;
+    }
+
+    let question = { text, type };
+
+    if (type === "qcm") {
+        const opts = [...document.querySelectorAll(".option")].map(o => o.value.trim());
+        const correct = document.querySelector("input[name='correct']:checked");
+
+        if (opts.some(o => o === "")) {
+            alert("Toutes les options doivent être remplies.");
+            return;
+        }
+        if (!correct) {
+            alert("Veuillez sélectionner la bonne réponse.");
+            return;
         }
 
-        function deleteQuestion(id) {
-            document.getElementById(`question-${id}`).remove();
-        }
+        question.options = opts;
+        question.correctAnswer = parseInt(correct.value);
+    }
 
-        // Ajoute une première question par défaut
-        addQuestion();
+    if (type === "libre") {
+        question.expectedAnswer = "";
+    }
 
-        document.getElementById('quiz-form').addEventListener('submit', function(event) {
-            event.preventDefault();
+    questions.push(question);
+    addQuestionToUI(question);
 
-            const title = document.getElementById('titre').value;
-            const description = document.getElementById('description').value;
-            const questions = [];
-            
-            document.querySelectorAll('[id^="question-"]').forEach((div, index) => {
-                const text = div.querySelector('.question-text').value;
-                const expectedAnswer = div.querySelector('.libre-answer').value;
+    // Reset
+    document.getElementById("question-text").value = "";
+    document.querySelectorAll(".option").forEach(o => o.value = "");
+    document.querySelectorAll("input[name='correct']").forEach(r => r.checked = false);
+});
 
-                if (text) {
-                    questions.push({
-                        text: text,
-                        type: 'libre',
-                        expectedAnswer: expectedAnswer
-                    });
-                }
-            });
+function addQuestionToUI(q) {
+    index++;
 
-            if (!title) {
-                alert('Veuillez donner un titre au quiz.');
-                return;
-            }
-            if (questions.length === 0) {
-                alert('Veuillez ajouter au moins une question.');
-                return;
-            }
+    const container = document.getElementById("questions-container");
 
-            const quizData = {
-                title: title,
-                description: description,
-                category: 'entreprise', // Catégorie fixe
-                type: 'libre',
-                questions: questions
-            };
+    let html = `
+        <div class="bg-gray-50 border border-gray-200 rounded-xl p-6" id="q-${index}">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-gray-700">${q.type.toUpperCase()} — ${q.text}</h3>
+                <button onclick="removeQuestion(${index})" class="text-red-500 hover:text-red-700 text-2xl font-bold">&times;</button>
+            </div>
+    `;
 
-            fetch('/api/quiz/create', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(quizData)
-            })
-            .then(response => {
-                if (!response.ok) throw new Error('La requête a échoué');
-                return response.json();
-            })
-            .then(data => {
-                alert('Quiz créé avec succès !');
-                window.location.href = '/dashbentreprise.html';
-            })
-            .catch(error => {
-                console.error('Erreur:', error);
-                alert('Une erreur est survenue lors de la création du quiz.');
-            });
+    if (q.type === "qcm") {
+        html += `<ul class="list-disc ml-6 text-gray-600">`;
+        q.options.forEach((o, i) => {
+            html += `<li>${o} ${i === q.correctAnswer ? "<span class='text-green-600 font-semibold'>(Bonne réponse)</span>" : ""}</li>`;
         });
-    </script>
+        html += `</ul>`;
+    }
+
+    html += `</div>`;
+
+    container.insertAdjacentHTML("beforeend", html);
+}
+
+function removeQuestion(i) {
+    document.getElementById("q-" + i).remove();
+    questions.splice(i - 1, 1);
+}
+
+document.getElementById("quiz-form").addEventListener("submit", async function (event) {
+    event.preventDefault();
+
+    const name = document.getElementById("titre").value.trim();
+
+    if (!name || questions.length === 0) {
+        alert("Veuillez ajouter un titre et au moins une question.");
+        return;
+    }
+
+    const quizData = {
+        name: name,             
+        questions: questions    
+    };
+
+    try {
+        const response = await fetch("/quizzes", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(quizData)
+        });
+
+        if (!response.ok) {
+            const error = await response.json();
+            alert("Erreur : " + error.message);
+            return;
+        }
+
+        alert("Quiz créé avec succès !");
+
+        window.location.href = "/dashbentreprise.html";
+
+    } catch (err) {
+        console.error(err);
+        alert("Une erreur est survenue.");
+    }
+});
+
+</script>
+
 </body>
 </html>
-
