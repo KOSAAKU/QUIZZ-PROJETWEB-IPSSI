@@ -20,6 +20,7 @@ import './seed.js';
 import { loginUser } from './controllers/AuthController.js';
 import { getUserById, registerUser } from './controllers/UserController.js';
 import { verifyToken } from './controllers/TokenController.js';
+import { createQuizz } from './controllers/QuizzController.js';
 
 // Fonction async pour initialiser la base de données
 async function initDatabase() {
@@ -357,22 +358,92 @@ app.post('/quizzes', async (req, res) => {
         // Postgres / pg expects a JSON string for JSON columns — stringify it
         const questionsJson = JSON.stringify(questions);
 
-        const [result] = await sequelize.query(
-            // on force le cast en JSON côté SQL pour être sûr (:questions::json)
-            'INSERT INTO quizzs (name, questions, ownerId, status, createdAt, updatedAt) VALUES (:name, :questions, :ownerId, \'pending\', NOW(), NOW())',
-            { replacements: { name, questions: questionsJson, ownerId }}
-        );
-
-        // result[0] contient les rows retournées ; récupérer l'id en gardant la compatibilité
-        const insertedRows = result[0];
-        const insertedId = insertedRows?.id ?? null;
+        const quizz = await createQuizz(name, questionsJson, ownerId);
 
         return res.status(201).json({
             message: 'Quizz created successfully',
-            quizz: { id: insertedId, name, questions, ownerId }
+            quizz
         });
     } catch (error) {
         console.error('Error creating quizz:', error);
+        return res.status(500).json({
+            error: 'Internal server error',
+            message: error.message
+        });
+    }
+});
+
+app.post('/api/quiz/generate', async (req, res) => {
+    try {
+        const tokenCookie = req.cookies.token;
+
+        if (!tokenCookie) {
+            return res.status(401).json({
+                error: 'Token manquant',
+                message: 'Aucun token d\'authentification fourni'
+            });
+        }
+
+        const token = JSON.parse(tokenCookie);
+        const decoded = await verifyToken(token);
+        if (!decoded) {
+            return res.status(401).json({
+                error: 'Token invalide',
+                message: 'Le token fourni est invalide'
+            });
+        }
+        const [userRows] = await sequelize.query(
+            `SELECT id, role FROM users WHERE id = :userId AND actif = true`,
+            {
+                replacements: { userId: decoded.userId }
+            }
+        );
+        if (!userRows || userRows.length === 0) {
+            return res.status(403).json({
+                error: 'Accès refusé',
+                message: 'Vous n\'avez pas les droits nécessaires pour accéder à cette ressource',
+            });
+        }
+        if (!['ecole', 'entreprise'].includes(userRows[0].role)) {
+            return res.status(403).json({
+                error: 'Accès refusé',
+                message: 'Seuls les utilisateurs avec le rôle ecole ou entreprise peuvent créer des quizzs',
+            });
+        }
+        const ownerId = userRows[0].id;
+
+        const { name, theme, numQuestions, specificQuestions } = req.body;
+
+        const response = await fetch(`https://opentdb.com/api.php?amount=${numQuestions}&category=${theme}`);
+        const data = await response.json();
+
+        const questions = data.results.map(q => {
+            const answers = [...q.incorrect_answers, q.correct_answer];
+            answers.sort(() => Math.random() - 0.5);
+            const correctAnswerIndex = answers.indexOf(q.correct_answer);
+
+            return {
+                text: q.question,
+                type: q.type,
+                answers: answers,
+                correct: correctAnswerIndex
+            }
+        });
+
+        if (specificQuestions) {
+            questions.push(...specificQuestions);
+        }
+
+        const questionsJson = JSON.stringify(questions);
+
+        const quizz = await createQuizz(name, questionsJson, ownerId);
+
+        return res.status(201).json({
+            message: 'Quiz generated successfully',
+            quizz
+        });
+    } catch (error) {
+        console.error('Error generating quizz:', error);
         return res.status(500).json({
             error: 'Internal server error',
             message: error.message
