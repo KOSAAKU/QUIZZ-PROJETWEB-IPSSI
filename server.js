@@ -297,7 +297,7 @@ app.get('/quizzes', async (req, res) => {
             };
         });
 
-        return res.status(200).json({ quizzs: formattedQuizzes });
+        return res.status(200).json({ quizzes: formattedQuizzes });
     } catch (error) {
         console.error('Error fetching quizzes:', error);
         return res.status(500).json({
