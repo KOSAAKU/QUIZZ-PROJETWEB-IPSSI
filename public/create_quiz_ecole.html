@@ -35,41 +35,25 @@
                 <h2 class="text-3xl font-bold text-gray-700 mb-6">Générer avec l'IA</h2>
                 <div class="space-y-5">
                     <div>
-                        <label for="theme" class="text-lg font-medium text-gray-700">Thème :</label>
-                        <select id="theme" name="theme" class="w-full text-lg mt-1 p-4 rounded-xl bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 ring-secondary">
-                            <option value="9">General Knowledge</option>
-                            <option value="10">Entertainment: Books</option>
-                            <option value="11">Entertainment: Film</option>
-                            <option value="12">Entertainment: Music</option>
-                            <option value="13">Entertainment: Musicals & Theatres</option>
-                            <option value="14">Entertainment: Television</option>
-                            <option value="15">Entertainment: Video Games</option>
-                            <option value="16">Entertainment: Board Games</option>
-                            <option value="17">Science & Nature</option>
-                            <option value="18">Science: Computers</option>
-                            <option value="19">Science: Mathematics</option>
-                            <option value="20">Mythology</option>
-                            <option value="21">Sports</option>
-                            <option value="22">Geography</option>
-                            <option value="23">History</option>
-                            <option value="24">Politics</option>
-                            <option value="25">Art</option>
-                            <option value="26">Celebrities</option>
-                            <option value="27">Animals</option>
-                            <option value="28">Vehicles</option>
-                            <option value="29">Entertainment: Comics</option>
-                            <option value="30">Science: Gadgets</option>
-                            <option value="31">Entertainment: Japanese Anime & Manga</option>
-                            <option value="32">Entertainment: Cartoon & Animations</option>
-                        </select>
+                        <label for="theme" class="text-lg font-medium text-gray-700">Thème du quiz :</label>
+                        <input type="text" id="theme" name="theme" placeholder="Ex: Mathématiques, Sciences, Histoire..." class="w-full text-lg mt-1 p-4 rounded-xl bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 ring-secondary">
                     </div>
                     <div>
                         <label for="numQuestions" class="text-lg font-medium text-gray-700">Nombre de questions :</label>
-                        <input type="number" id="numQuestions" name="numQuestions" min="1" max="50" value="10" class="w-full text-lg mt-1 p-4 rounded-xl bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 ring-secondary">
+                        <input type="number" id="numQuestions" name="numQuestions" min="1" max="20" value="5" class="w-full text-lg mt-1 p-4 rounded-xl bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 ring-secondary">
                     </div>
                     <button type="button" onclick="generateWithAI()" class="py-3 px-8 rounded-xl font-semibold text-xl shadow-lg transition btn-primary">
                         Générer avec l'IA
                     </button>
+                    <div id="ai-loading" class="hidden">
+                        <div class="flex items-center justify-center space-x-3 text-gray-600">
+                            <svg class="animate-spin h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            <span class="text-lg">Génération du quiz en cours...</span>
+                        </div>
+                    </div>
                 </div>
 
                 <hr class="my-10">
@@ -183,8 +167,82 @@
             document.getElementById(`question-${id}`).remove();
         }
 
-        // Ajouter la première question par défaut
-        addQuestion();
+        addQuestion(); // Add first question by default
+
+        function generateWithAI() {
+            const theme = document.getElementById('theme').value;
+            const numQuestions = document.getElementById('numQuestions').value;
+
+            if (!theme) {
+                alert('Veuillez saisir un thème pour le quiz.');
+                return;
+            }
+
+            const loadingDiv = document.getElementById('ai-loading');
+            loadingDiv.classList.remove('hidden');
+
+            const quizData = {
+                theme: theme,
+                numQuestions: numQuestions
+            };
+
+            fetch('/api/quiz/generate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(quizData)
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(err => {
+                            throw new Error(err.message || 'La requête a échoué');
+                        });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    loadingDiv.classList.add('hidden');
+
+                    // Vider les questions existantes
+                    document.getElementById('questions-container').innerHTML = '';
+                    questionCount = 0;
+
+                    // Pré-remplir avec les questions générées
+                    data.questions.forEach(q => {
+                        addQuestion();
+                        const currentQuestionDiv = document.getElementById(`question-${questionCount}`);
+
+                        // Remplir l'énoncé
+                        currentQuestionDiv.querySelector('.question-text').value = q.question;
+
+                        // Remplir les options pour les QCM
+                        if (q.type === 'qcm' && q.choices) {
+                            const optionsContainer = document.getElementById(`options-${questionCount}`);
+                            optionsContainer.innerHTML = '';
+
+                            q.choices.forEach((choice, idx) => {
+                                optionsContainer.insertAdjacentHTML('beforeend', createOption(questionCount, idx + 1));
+                                const optionInputs = optionsContainer.querySelectorAll('.qcm-option');
+                                optionInputs[idx].value = choice;
+                            });
+
+                            updateCorrectAnswerSelect(questionCount);
+
+                            // Sélectionner la bonne réponse
+                            const correctAnswerIndex = q.choices.indexOf(q.answer);
+                            if (correctAnswerIndex !== -1) {
+                                document.getElementById(`correct-${questionCount}`).value = correctAnswerIndex;
+                            }
+                        }
+                    });
+
+                    alert(`${data.questions.length} questions ont été générées et ajoutées au formulaire. Vous pouvez les modifier avant de créer le quiz.`);
+                })
+                .catch(error => {
+                    loadingDiv.classList.add('hidden');
+                    console.error('Erreur:', error);
+                    alert('Une erreur est survenue lors de la génération du quiz: ' + error.message);
+                });
+        }
 
         // Soumettre le formulaire
         document.getElementById('quiz-form').addEventListener('submit', function (event) {

@@ -21,6 +21,7 @@ import { loginUser } from './controllers/AuthController.js';
 import { getUserById, registerUser } from './controllers/UserController.js';
 import { verifyToken } from './controllers/TokenController.js';
 import { createQuizz } from './controllers/QuizzController.js';
+import { generateQuizWithGemini } from './controllers/GeminiController.js';
 
 // Fonction async pour initialiser la base de données
 async function initDatabase() {
@@ -573,37 +574,24 @@ app.post('/api/quiz/generate', async (req, res) => {
                 message: 'Seuls les utilisateurs avec le rôle ecole ou entreprise peuvent créer des quizzs',
             });
         }
-        const ownerId = userRows[0].id;
+        const userRole = userRows[0].role;
 
-        const { name, theme, numQuestions, specificQuestions } = req.body;
+        const { theme, numQuestions } = req.body;
 
-        const response = await fetch(`https://opentdb.com/api.php?amount=${numQuestions}&category=${theme}`);
-        const data = await response.json();
-
-        const questions = data.results.map(q => {
-            const answers = [...q.incorrect_answers, q.correct_answer];
-            answers.sort(() => Math.random() - 0.5);
-            const correctAnswerIndex = answers.indexOf(q.correct_answer);
-
-            return {
-                text: q.question,
-                type: q.type,
-                answers: answers,
-                correct: correctAnswerIndex
-            }
-        });
-
-        if (specificQuestions) {
-            questions.push(...specificQuestions);
+        if (!theme || !numQuestions) {
+            return res.status(400).json({
+                error: 'Validation error',
+                message: 'Le thème et le nombre de questions sont requis'
+            });
         }
 
-        const questionsJson = JSON.stringify(questions);
+        // Générer les questions avec Gemini AI (sans les sauvegarder)
+        const questions = await generateQuizWithGemini(theme, parseInt(numQuestions), userRole);
 
-        const quizz = await createQuizz(name, questionsJson, ownerId);
-
-        return res.status(201).json({
-            message: 'Quiz generated successfully',
-            quizz
+        // Retourner uniquement les questions générées
+        return res.status(200).json({
+            message: 'Questions générées avec succès',
+            questions
         });
     } catch (error) {
         console.error('Error generating quizz:', error);
