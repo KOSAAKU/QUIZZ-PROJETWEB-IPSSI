@@ -2,10 +2,10 @@ import { sequelize } from '../config/database.js';
 
 export async function createQuizz(name, questions, ownerId) {
     const result = await sequelize.query(
-        'INSERT INTO quizzs (name, questions, ownerId) VALUES (:name, :questions, :ownerId) RETURNING id',
+        'INSERT INTO quizzs (name, questions, ownerId, status) VALUES (:name, :questions, :ownerId, \'pending\') RETURNING id',
         { replacements: { name, questions, ownerId } }
     );
-    return { id: result[0].id, name, questions, ownerId };
+    return { id: result[0].id, name, questions, ownerId, status: 'pending' };
 }
 
 export async function getQuizzById(quizzId) {
