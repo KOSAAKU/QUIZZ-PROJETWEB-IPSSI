@@ -1,5 +1,5 @@
 import { sequelize } from "./config/database.js";
-import { DataTypes, Model } from "sequelize";
+import { DataTypes, Model, Sequelize } from "sequelize";
 
 class User extends Model {}; 
 User.init({
@@ -34,7 +34,7 @@ User.init({
     createdAt : {
         type: DataTypes.DATE,
         allowNull: false,
-        defaultValue: DataTypes.NOW
+        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP')
     },
 }, {
     sequelize,
@@ -70,12 +70,12 @@ Quizz.init({
     createdAt : {
         type: DataTypes.DATE,
         allowNull: false,
-        defaultValue: DataTypes.NOW
+        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP')
     }
 }, {
     sequelize,
     modelName: "Quizz",
-    tableName: "quizz",
+    tableName: "quizzs",
     timestamps: false
 });
 
@@ -101,7 +101,7 @@ Reponses.init({
     createdAt: {
         type: DataTypes.DATE,
         allowNull: false,
-        defaultValue: DataTypes.NOW
+        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP')
     },
 }, {
     sequelize,
