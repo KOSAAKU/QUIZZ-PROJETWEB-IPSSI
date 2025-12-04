@@ -22,7 +22,7 @@
         <h1 class="text-3xl font-bold text-gray-800 mb-6">Dashboard Entreprise</h1>
             <div class="bg-white rounded-lg shadow-lg p-6">
                 <h2 class="text-2xl font-bold text-gray-800 mb-4">Création de Quiz</h2>
-                <a href="/create_quiz_entreprise" class="btn-primary w-full py-2 rounded-lg text-center inline-block">Créer un nouveau quiz</a>
+                <a href="/quizz/create" class="btn-primary w-full py-2 rounded-lg text-center inline-block">Créer un nouveau quiz</a>
                  <div class="overflow-x-auto mt-4">
                     <table class="w-full text-left">
                         <thead>
@@ -37,26 +37,6 @@
                         <tbody>
                         </tbody>
                     </table>
-                </div>
-            </div>
-
-            <br />
-
-            <div class="bg-white rounded-lg shadow-lg p-6 lg:col-span-2">
-                <h2 class="text-2xl font-bold text-gray-800 mb-4">Statistiques</h2>
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 text-center">
-                    <div class="bg-green-100 p-4 rounded-lg">
-                        <p class="text-3xl font-bold">0</p>
-                        <p class="text-gray-600">Quiz Créés</p>
-                    </div>
-                    <div class="bg-yellow-100 p-4 rounded-lg">
-                        <p class="text-3xl font-bold">0</p>
-                        <p class="text-gray-600">Quiz Complétés</p>
-                    </div>
-                     <div class="bg-purple-100 p-4 rounded-lg">
-                        <p class="text-3xl font-bold">-</p>
-                        <p class="text-gray-600">Score Moyen</p>
-                    </div>
                 </div>
             </div>
         </div>
@@ -102,6 +82,7 @@
                                     </span>
                                 </td>
                                 <td class="p-3">
+                                    <a href="/dashboard/quizz/${quiz.id}/" class="text-green-600 hover:underline mr-4">Participations</a>
                                     <a href="/quizz/${quiz.id}/toggle" class="text-blue-600 hover:underline mr-4">${quiz.status === 'pending' ? 'Démarrer' : quiz.status === 'started' ? 'Terminer' : ''}</a>
                                     <a href="/quizz/${quiz.id}/delete" class="text-red-600 hover:underline">Supprimer</a>
                                 </td>
