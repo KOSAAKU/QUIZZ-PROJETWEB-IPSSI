@@ -108,11 +108,15 @@ app.get('/quizz/create', async (req, res) => {
         return res.redirect('/login');
     }
     if (user.role === 'entreprise') {
-        return res.sendFile('public/create_quiz_entreprise.html', { root: '.' });
+        return res.sendFile('public/create_quizz_entreprise.html', { root: '.' });
     } else if (user.role === 'ecole') {
-        return res.sendFile('public/create_quiz_ecole.html', { root: '.' });
+        return res.sendFile('public/create_quizz_ecole.html', { root: '.' });
     }
     return res.redirect('/login');
+});
+
+app.get('/quizz/:id', async (req, res) => {
+    res.sendFile('public/quizz.html', { root: '.' });
 });
 
 app.post('/register', async (req, res) => {
@@ -292,13 +296,13 @@ app.get('/quizzes', async (req, res) => {
             }
         );
 
-        let formattedQuizzes = quizzes.map((quiz) => {
+        let formattedQuizzes = quizzes.map((quizz) => {
             return {
                 ...quiz,
-                questions: Array.isArray(quiz.questions) 
-                    ? quiz.questions.length 
-                    : (typeof quiz.questions === 'string' 
-                        ? JSON.parse(quiz.questions).length 
+                questions: Array.isArray(quizz.questions) 
+                    ? quizz.questions.length 
+                    : (typeof quizz.questions === 'string' 
+                        ? JSON.parse(quizz.questions).length 
                         : 0)
             };
         });
@@ -369,10 +373,10 @@ app.get('/quizz/:id/toggle', async (req, res) => {
             default:
                 return res.status(400).json({
                     error: 'Invalid operation',
-                    message: `Cannot toggle quiz with status '${currentStatus}'`
+                    message: `Cannot toggle quizz with status '${currentStatus}'`
                 });
         }
-        return res.status(200).json({ message: 'Quiz status updated successfully' });
+        return res.status(200).json({ message: 'Quizz status updated successfully' });
     } catch (error) {
         console.error('Error fetching quiz:', error);
         return res.status(500).json({
@@ -418,7 +422,7 @@ app.delete('/quizz/:id/delete', async (req, res) => {
                 message: 'Quizz not found or you do not have permission to delete it'
             });
         }
-        return res.status(200).json({ message: 'Quiz deleted successfully' });
+        return res.status(200).json({ message: 'Quizz deleted successfully' });
     } catch (error) {
         console.error('Error deleting quiz:', error);
         return res.status(500).json({
@@ -430,26 +434,26 @@ app.delete('/quizz/:id/delete', async (req, res) => {
 
 app.get('/quizzes/:id', async (req, res) => {
     try {
-        const quizId = req.params.id;
-        const [quizRows] = await sequelize.query(
-            "SELECT * FROM quizzs WHERE id = :quizId AND status = 'actif' LIMIT 1",
+        const quizzId = req.params.id;
+        const [quizzRows] = await sequelize.query(
+            "SELECT * FROM quizzs WHERE id = :quizzId AND status = 'started' LIMIT 1",
             {
-                replacements: { quizId }
+                replacements: { quizzId }
             }
         );
-        if (!quizRows || quizRows.length === 0) {
+        if (!quizzRows || quizzRows.length === 0) {
             return res.status(404).json({
                 error: 'Not Found',
-                message: 'Quizz not found'
+                message: 'Quizz introuvable ou non disponible'
             });
         }
-        const quiz = quizRows[0];
-        
+        const quizz = quizzRows[0];
+
         // Parse questions if stored as string
-        let questions = typeof quiz.questions === 'string' 
-            ? JSON.parse(quiz.questions) 
-            : quiz.questions;
-        
+        let questions = typeof quizz.questions === 'string'
+            ? JSON.parse(quizz.questions)
+            : quizz.questions;
+
         // Remove answers from QCM questions
         if (Array.isArray(questions)) {
             questions = questions.map(q => {
@@ -460,9 +464,9 @@ app.get('/quizzes/:id', async (req, res) => {
             return q;
             });
         }
-        
-        quiz.questions = questions;
-        return res.status(200).json({ quiz });
+
+        quizz.questions = questions;
+        return res.status(200).json(quizz);
     } catch (error) {
         console.error('Error fetching quiz:', error);
         return res.status(500).json({
@@ -472,7 +476,142 @@ app.get('/quizzes/:id', async (req, res) => {
     }
 });
 
-app.post('/quizzes', async (req, res) => {
+app.post('/quizzes/:id/submit', async (req, res) => {
+    try {
+        const quizId = req.params.id;
+        const { answers } = req.body;
+
+        if (!answers || !Array.isArray(answers)) {
+            return res.status(400).json({
+                error: 'Validation error',
+                message: 'Les réponses sont requises et doivent être un tableau'
+            });
+        }
+
+        // Vérifier l'authentification de l'utilisateur
+        const tokenCookie = req.cookies.token;
+        let userId = null;
+
+        if (tokenCookie) {
+            try {
+                const token = JSON.parse(tokenCookie);
+                const decoded = await verifyToken(token);
+                if (decoded) {
+                    userId = decoded.userId;
+                }
+            } catch (err) {
+                // Si le token est invalide, on continue sans userId (utilisateur anonyme)
+                console.log('Invalid token, continuing as anonymous');
+            }
+        }
+
+        // Récupérer le quizz avec les bonnes réponses
+        const [quizRows] = await sequelize.query(
+            "SELECT * FROM quizzs WHERE id = :quizId AND status = 'started' LIMIT 1",
+            {
+                replacements: { quizId }
+            }
+        );
+
+        if (!quizRows || quizRows.length === 0) {
+            return res.status(404).json({
+                error: 'Not Found',
+                message: 'Quizz introuvable ou non disponible'
+            });
+        }
+
+        const quizz = quizRows[0];
+        // Parse questions if stored as string
+        let questions = typeof quizz.questions === 'string'
+            ? JSON.parse(quizz.questions)
+            : quizz.questions;
+
+        // Vérifier que le nombre de réponses correspond au nombre de questions
+        if (answers.length !== questions.length) {
+            return res.status(400).json({
+                error: 'Validation error',
+                message: 'Le nombre de réponses ne correspond pas au nombre de questions'
+            });
+        }
+
+        // Calculer le score
+        let score = 0;
+        const results = [];
+
+        answers.forEach((userAnswer, index) => {
+            const question = questions[index];
+            let isCorrect = false;
+
+            if (question.type === 'qcm') {
+                // Comparer la réponse de l'utilisateur avec la bonne réponse
+                isCorrect = userAnswer.answer === question.answer;
+                if (isCorrect) {
+                    score++;
+                }
+            } else if (question.type === 'libre') {
+                // Pour les questions libres, on ne peut pas auto-corriger
+                // On considère la réponse comme "à corriger manuellement"
+                isCorrect = null; // null signifie "nécessite correction manuelle"
+            }
+
+            results.push({
+                questionIndex: index,
+                question: question.question,
+                type: question.type,
+                userAnswer: userAnswer.answer,
+                correctAnswer: question.answer || null,
+                isCorrect: isCorrect
+            });
+        });
+
+        // Calculer le nombre total de questions QCM (celles qui sont auto-corrigées)
+        const totalQCM = questions.filter(q => q.type === 'qcm').length;
+
+        // Enregistrer les réponses dans la table reponses
+        const answersJson = JSON.stringify(results);
+
+        if (userId) {
+            // Si l'utilisateur est authentifié, enregistrer avec son userId
+            await sequelize.query(
+                'INSERT INTO reponses (quizzId, userId, answers, createdAt) VALUES (:quizzId, :userId, :answers, NOW())',
+                {
+                    replacements: {
+                        quizzId: quizId,
+                        userId: userId,
+                        answers: answersJson
+                    }
+                }
+            );
+        } else {
+            // Si l'utilisateur n'est pas authentifié, enregistrer avec userId = NULL ou 0
+            await sequelize.query(
+                'INSERT INTO reponses (quizzId, userId, answers, createdAt) VALUES (:quizzId, 0, :answers, NOW())',
+                {
+                    replacements: {
+                        quizzId: quizId,
+                        answers: answersJson
+                    }
+                }
+            );
+        }
+
+        return res.status(200).json({
+            message: 'Quizz soumis avec succès',
+            score: score,
+            total: totalQCM,
+            totalQuestions: questions.length,
+            results: results
+        });
+    } catch (error) {
+        console.error('Error submitting quiz:', error);
+        return res.status(500).json({
+            error: 'Internal server error',
+            message: error.message
+        });
+    }
+});
+
+app.post('/api/quizzes', async (req, res) => {
     try {
         // check if the user is authenticated AND has 'ecole' or 'entreprise' role
         const tokenCookie = req.cookies.token;
@@ -537,7 +676,7 @@ app.post('/quizzes', async (req, res) => {
     }
 });
 
-app.post('/api/quiz/generate', async (req, res) => {
+app.post('/api/quizz/generate', async (req, res) => {
     try {
         const tokenCookie = req.cookies.token;
 

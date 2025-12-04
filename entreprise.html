@@ -96,14 +96,14 @@
         </section>
 
 
-        <!-- SECTION : Création de Quiz -->
+        <!-- SECTION : Création de Quizz -->
         <section class="mb-12 bg-white p-6 rounded-xl shadow-md">
-            <h2 class="text-2xl font-bold mb-6 text-orange-500">📘 Créer un quiz</h2>
+            <h2 class="text-2xl font-bold mb-6 text-orange-500">📘 Créer un quizz</h2>
 
             <form method="POST" action="/company/quizzes/add" class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
                 <div>
-                    <label class="block font-medium">Titre du quiz</label>
+                    <label class="block font-medium">Titre du quizz</label>
                     <input type="text" name="title" class="w-full p-3 border rounded-lg" required>
                 </div>
 
@@ -113,7 +113,7 @@
                 </div>
 
                 <div>
-                    <label class="block font-medium">Type de quiz</label>
+                    <label class="block font-medium">Type de quizz</label>
                     <select name="type" class="w-full p-3 border rounded-lg" required>
                         <option value="">-- Sélectionner --</option>
                         <option value="qcm">QCM</option>
@@ -159,7 +159,7 @@
                 <div class="md:col-span-2">
                     <button type="submit"
                         class="bg-orange-400 hover:bg-orange-500 text-white py-3 px-6 rounded-lg shadow transition">
-                        Créer le quiz
+                        Créer le quizz
                     </button>
                 </div>
             </form>
@@ -168,7 +168,7 @@
 
         <!-- TABLE QUIZZES -->
         <section class="mb-12">
-            <h2 class="text-2xl font-bold mb-4 text-orange-500">📚 Liste des quiz</h2>
+            <h2 class="text-2xl font-bold mb-4 text-orange-500">📚 Liste des quizz</h2>
             <div class="overflow-x-auto bg-white rounded-xl shadow-md">
                 <table class="w-full">
                     <thead class="bg-orange-200">
