@@ -499,7 +499,7 @@ router.post('/api/quizzes', authenticate, requireRole('ecole', 'entreprise'), as
         const questionsJson = JSON.stringify(questions);
 
         const [result] = await sequelize.query(
-            'INSERT INTO quizzs (name, questions, ownerId, status, createdAt, updatedAt) VALUES (:name, :questions, :ownerId, \'pending\', NOW(), NOW())',
+            'INSERT INTO quizzs (name, questions, ownerId, status, createdAt) VALUES (:name, :questions, :ownerId, \'pending\', NOW())',
             { replacements: { name, questions: questionsJson, ownerId: req.userId }}
         );
 

@@ -1049,7 +1049,7 @@ app.post('/api/quizzes', async (req, res) => {
 
         const [result] = await sequelize.query(
             // on force le cast en JSON côté SQL pour être sûr (:questions::json)
-            'INSERT INTO quizzs (name, questions, ownerId, status, createdAt, updatedAt) VALUES (:name, :questions, :ownerId, \'pending\', NOW(), NOW())',
+            'INSERT INTO quizzs (name, questions, ownerId, status, createdAt) VALUES (:name, :questions, :ownerId, \'pending\', NOW())',
             { replacements: { name, questions: questionsJson, ownerId }}
         );
 
