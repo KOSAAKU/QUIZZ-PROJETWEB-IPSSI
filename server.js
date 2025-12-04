@@ -90,7 +90,7 @@ app.use((req, res, next) => {
                 if (decoded && decoded.userId) {
                     const user = await getUserById(decoded.userId);
                     if (user && !user.actif) {
-                        return res.sendFile('public/ban.html', { root: '.' });
+                        return res.sendFile('public/suspended.html', { root: '.' });
                     }
                 }
             }).catch(() => {

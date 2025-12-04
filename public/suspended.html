@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Compte Suspendu - Quizzeo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/assets/css/style.css">
+</head>
+<body class="bg-gray-100">
+
+    <header class="bg-white shadow-md">
+        <nav class="container mx-auto px-6 py-3 flex justify-between items-center">
+            <a href="/" class="text-2xl font-bold text-gray-800"> <img class="h-9" src="/assets/img/img1.png" alt="Quizzeo"> </a>
+        </nav>
+    </header>
+
+    <main class="container mx-auto px-6 py-12 flex items-center justify-center min-h-screen">
+        <div class="max-w-2xl w-full">
+            <div class="bg-white rounded-lg shadow-lg p-8 text-center">
+                <div class="mb-6">
+                    <svg class="mx-auto h-24 w-24 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                    </svg>
+                </div>
+
+                <h1 class="text-3xl font-bold text-gray-800 mb-4">Compte Suspendu</h1>
+
+                <div class="bg-red-50 border-2 border-red-200 rounded-lg p-6 mb-6">
+                    <p class="text-lg text-gray-700 mb-4">
+                        Votre compte a été temporairement suspendu.
+                    </p>
+                    <p class="text-gray-600">
+                        Cette suspension peut être due à une violation de nos conditions d'utilisation ou à une activité suspecte détectée sur votre compte.
+                    </p>
+                </div>
+
+                <div class="text-left bg-gray-50 rounded-lg p-6 mb-6">
+                    <h2 class="text-xl font-bold text-gray-800 mb-3">Que faire maintenant ?</h2>
+                    <ul class="space-y-2 text-gray-700">
+                        <li class="flex items-start">
+                            <svg class="h-6 w-6 text-blue-500 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            <span>Vérifiez votre email pour plus d'informations sur la raison de la suspension</span>
+                        </li>
+                        <li class="flex items-start">
+                            <svg class="h-6 w-6 text-blue-500 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                            </svg>
+                            <span>Contactez notre équipe de support pour obtenir de l'aide</span>
+                        </li>
+                        <li class="flex items-start">
+                            <svg class="h-6 w-6 text-blue-500 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                            <span>Consultez nos conditions d'utilisation pour comprendre nos règles</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <a href="mailto:support@quizzeo.com" class="btn-primary px-6 py-3 rounded-lg text-center">
+                        Contacter le Support
+                    </a>
+                    <a href="/logout" class="px-6 py-3 rounded-lg text-center bg-gray-200 text-gray-800 hover:bg-gray-300">
+                        Se Déconnecter
+                    </a>
+                </div>
+
+                <div class="mt-6 text-sm text-gray-500">
+                    <p>Pour toute question urgente, contactez-nous à support@quizzeo.com</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-white mt-16 py-6">
+        <div class="container mx-auto px-6 text-center text-gray-600">
+            <p>&copy; 2025 Quizzeo - Tous droits réservés</p>
+        </div>
+    </footer>
+</body>
+</html>
