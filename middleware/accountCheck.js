@@ -1,5 +1,10 @@
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { verifyToken } from '../controllers/TokenController.js';
 import { getUserById } from '../controllers/UserController.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 /**
  * Middleware to check if the user account is active before proceeding
@@ -20,7 +25,7 @@ export const checkAccountActive = async (req, res, next) => {
             if (decoded && decoded.userId) {
                 const user = await getUserById(decoded.userId);
                 if (user && !user.actif) {
-                    return res.sendFile('public/suspended.html', { root: '.' });
+                    return res.sendFile(path.join(__dirname, '..', 'public', 'suspended.html'));
                 }
             }
 

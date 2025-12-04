@@ -1,9 +1,14 @@
 import express from 'express';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { sequelize } from '../config/database.js';
 import { verifyToken } from '../controllers/TokenController.js';
 import { getUserById } from '../controllers/UserController.js';
 import { authenticate, requireRole, optionalAuth } from '../middleware/auth.js';
 import { generateQuizWithGemini } from '../controllers/GeminiController.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const router = express.Router();
 
@@ -21,9 +26,9 @@ router.get('/create', authenticate, async (req, res) => {
         }
 
         if (user.role === 'ecole') {
-            return res.sendFile('public/create_quizz_ecole.html', { root: '.' });
+            return res.sendFile(path.join(__dirname, '..', 'public', 'create_quizz_ecole.html'));
         } else if (user.role === 'entreprise') {
-            return res.sendFile('public/create_quizz_entreprise.html', { root: '.' });
+            return res.sendFile(path.join(__dirname, '..', 'public', 'create_quizz_entreprise.html'));
         }
     } catch (err) {
         console.error('Error in /quizz/create:', err);
@@ -583,7 +588,7 @@ router.get('/:id', optionalAuth, async (req, res) => {
             return res.redirect(`/login?redirect=${encodeURIComponent('/quizz/' + quizId)}`);
         }
 
-        res.sendFile('public/quizz.html', { root: '.' });
+        res.sendFile(path.join(__dirname, '..', 'public', 'quizz.html'));
     } catch (err) {
         console.error('Error in /quizz/:id:', err);
         return res.redirect('/login');

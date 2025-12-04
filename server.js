@@ -1,8 +1,13 @@
 import express from 'express';
 import cookieParser from 'cookie-parser';
 import session from 'express-session';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { sequelize } from './config/database.js';
 import './seed.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Import middlewares
 import { loggerMiddleware } from './middleware/logger.js';
@@ -59,7 +64,7 @@ async function initDatabase() {
 await initDatabase();
 
 // Fichiers statiques
-app.use(express.static('public'));
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Routes
 app.use('/', authRoutes);

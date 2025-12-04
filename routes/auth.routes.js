@@ -1,23 +1,28 @@
 import express from 'express';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { loginUser } from '../controllers/AuthController.js';
 import { registerUser } from '../controllers/UserController.js';
 import { verifyToken } from '../controllers/TokenController.js';
 import { sequelize } from '../config/database.js';
 import { onlineUsers } from '../middleware/onlineUsers.js';
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 const router = express.Router();
 
 // GET routes
 router.get('/', async (req, res) => {
-    res.sendFile('public/index.html', { root: '.' });
+    res.sendFile(path.join(__dirname, '..', 'public', 'index.html'));
 });
 
 router.get('/login', async (req, res) => {
-    res.sendFile('public/login.html', { root: '.' });
+    res.sendFile(path.join(__dirname, '..', 'public', 'login.html'));
 });
 
 router.get('/register', async (req, res) => {
-    res.sendFile('public/register.html', { root: '.' });
+    res.sendFile(path.join(__dirname, '..', 'public', 'register.html'));
 });
 
 router.get('/logout', async (req, res) => {
@@ -38,7 +43,7 @@ router.get('/logout', async (req, res) => {
     res.clearCookie('fullname');
     res.clearCookie('email');
     res.clearCookie('token');
-    res.sendFile('public/logout.html', { root: '.' });
+    res.sendFile(path.join(__dirname, '..', 'public', 'logout.html'));
 });
 
 // POST routes
