@@ -1462,6 +1462,72 @@ app.get('/api/user/my-quizzes', async (req, res) => {
     }
 });
 
+app.post('/api/quizz/generate', async (req, res) => {
+    try {
+        const tokenCookie = req.cookies.token;
+
+        if (!tokenCookie) {
+            return res.status(401).json({
+                error: 'Token manquant',
+                message: 'Aucun token d\'authentification fourni'
+            });
+        }
+
+        const token = JSON.parse(tokenCookie);
+        const decoded = await verifyToken(token);
+        if (!decoded) {
+            return res.status(401).json({
+                error: 'Token invalide',
+                message: 'Le token fourni est invalide'
+            });
+        }
+
+        const [userRows] = await sequelize.query(
+            `SELECT id, role FROM users WHERE id = :userId AND actif = true`,
+            {
+                replacements: { userId: decoded.userId }
+            }
+        );
+
+        if (!userRows || userRows.length === 0) {
+            return res.status(403).json({
+                error: 'Accès refusé',
+                message: 'Vous n\'avez pas les droits nécessaires pour accéder à cette ressource'
+            });
+        }
+
+        if (!['ecole', 'entreprise'].includes(userRows[0].role)) {
+            return res.status(403).json({
+                error: 'Accès refusé',
+                message: 'Seuls les utilisateurs avec le rôle ecole ou entreprise peuvent créer des quizzs'
+            });
+        }
+
+        const { theme, numQuestions } = req.body;
+
+        if (!theme || !numQuestions) {
+            return res.status(400).json({
+                error: 'Validation error',
+                message: 'Le thème et le nombre de questions sont requis'
+            });
+        }
+
+        // Générer les questions avec Gemini AI
+        const questions = await generateQuizWithGemini(theme, parseInt(numQuestions), userRows[0].role);
+
+        return res.status(200).json({
+            message: 'Questions générées avec succès',
+            questions
+        });
+    } catch (error) {
+        console.error('Error generating quizz:', error);
+        return res.status(500).json({
+            error: 'Internal server error',
+            message: error.message
+        });
+    }
+});
+
 app.get('/api/admin/online-users', async (req, res) => {
     try {
         const tokenCookie = req.cookies.token;
