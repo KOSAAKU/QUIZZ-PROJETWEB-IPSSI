@@ -1,5 +1,6 @@
 import express from 'express';
 import cookieParser from 'cookie-parser';
+import session from 'express-session';
 
 const app = express();
 
@@ -8,18 +9,76 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
+// Configuration des sessions en mémoire
+app.use(session({
+    secret: 'your-secret-key-change-in-production',
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+        secure: false, // Mettre à true en production avec HTTPS
+        httpOnly: true,
+        maxAge: 24 * 60 * 60 * 1000 // 24 heures
+    }
+}));
+
+// Store pour tracker les utilisateurs connectés en mémoire
+const onlineUsers = new Map(); // userId -> { fullname, email, role, lastActivity, sessionId }
+
 import { logger } from './controllers/LoggerController.js';
+import { sequelize } from './config/database.js';
+import './seed.js';
+import { loginUser } from './controllers/AuthController.js';
+import { getUserById, registerUser } from './controllers/UserController.js';
+import { verifyToken } from './controllers/TokenController.js';
+
 app.use((req, res, next) => {
     console.log('Request received:');
     logger(req, res);
     next();
 });
 
-import { sequelize } from './config/database.js';
-import './seed.js';
-import { loginUser } from './controllers/AuthController.js';
-import { getUserById, registerUser } from './controllers/UserController.js';
-import { verifyToken } from './controllers/TokenController.js';
+// Middleware pour mettre à jour l'activité des utilisateurs connectés
+app.use(async (req, res, next) => {
+    const tokenCookie = req.cookies.token;
+
+    if (tokenCookie) {
+        try {
+            const token = JSON.parse(tokenCookie);
+            const decoded = await verifyToken(token);
+
+            if (decoded && decoded.userId) {
+                const user = await getUserById(decoded.userId);
+
+                if (user && user.actif) {
+                    // Mettre à jour ou ajouter l'utilisateur dans la liste des connectés
+                    onlineUsers.set(decoded.userId, {
+                        userId: decoded.userId,
+                        fullname: user.fullname,
+                        email: user.email,
+                        role: user.role,
+                        lastActivity: new Date(),
+                        sessionId: req.sessionID
+                    });
+
+                    // Nettoyer les sessions inactives (plus de 10 minutes)
+                    const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);
+                    for (const [userId, userData] of onlineUsers.entries()) {
+                        if (userData.lastActivity < tenMinutesAgo) {
+                            onlineUsers.delete(userId);
+                        }
+                    }
+                }
+            }
+        } catch (err) {
+            // Ignorer les erreurs de token
+        }
+    }
+
+    next();
+});
+
+import { createQuizz } from './controllers/QuizzController.js';
+import { generateQuizWithGemini } from './controllers/GeminiController.js';
 
 // Fonction async pour initialiser la base de données
 async function initDatabase() {
@@ -79,6 +138,9 @@ app.get('/dashboard', async (req, res) => {
         case 'entreprise':
             console.log('Dashboard - sending entreprise dashboard');
             return res.sendFile('public/dashbentreprise.html', { root: '.' });
+        case 'user':
+            console.log('Dashboard - sending user dashboard');
+            return res.sendFile('public/dashbuser.html', { root: '.' });
         default:
             console.log('Dashboard - invalid role, redirecting to login');
             return res.redirect('/login');
@@ -158,6 +220,20 @@ app.get('/dashboard/quizz/:id/:answerId', async (req, res) => {
 });
 
 app.get('/logout', async (req, res) => {
+    // Retirer l'utilisateur de la liste des connectés
+    const tokenCookie = req.cookies.token;
+    if (tokenCookie) {
+        try {
+            const token = JSON.parse(tokenCookie);
+            const decoded = await verifyToken(token);
+            if (decoded && decoded.userId) {
+                onlineUsers.delete(decoded.userId);
+            }
+        } catch (err) {
+            // Ignorer les erreurs
+        }
+    }
+
     res.clearCookie('fullname');
     res.clearCookie('email');
     res.clearCookie('token');
@@ -980,6 +1056,471 @@ app.get('/api/quizzes/:id', async (req, res) => {
     console.error(err);
     res.status(500).json({ error: 'Erreur serveur' });
   }
+});
+
+// Admin Routes
+app.get('/api/admin/quizzes', async (req, res) => {
+    try {
+        const tokenCookie = req.cookies.token;
+
+        if (!tokenCookie) {
+            return res.status(401).json({
+                error: 'Token manquant',
+                message: 'Aucun token d\'authentification fourni'
+            });
+        }
+
+        const token = JSON.parse(tokenCookie);
+        const decoded = await verifyToken(token);
+        if (!decoded) {
+            return res.status(401).json({
+                error: 'Token invalide',
+                message: 'Le token fourni est invalide'
+            });
+        }
+
+        // Vérifier que l'utilisateur est admin
+        const [adminRows] = await sequelize.query(
+            `SELECT id, role FROM users WHERE id = :userId AND role = 'admin' AND actif = true`,
+            {
+                replacements: { userId: decoded.userId }
+            }
+        );
+
+        if (!adminRows || adminRows.length === 0) {
+            return res.status(403).json({
+                error: 'Accès refusé',
+                message: 'Vous n\'avez pas les droits nécessaires pour accéder à cette ressource',
+            });
+        }
+
+        // Récupérer tous les quizzes avec informations du propriétaire et nombre de participants
+        const [quizzes] = await sequelize.query(
+            `SELECT
+                q.id,
+                q.name,
+                q.status,
+                q.questions,
+                q.ownerId,
+                u.fullname as ownerName,
+                COALESCE(COUNT(DISTINCT r.id), 0) as participants
+             FROM quizzs q
+             LEFT JOIN users u ON q.ownerId = u.id
+             LEFT JOIN reponses r ON q.id = r.quizzId
+             GROUP BY q.id, u.fullname
+             ORDER BY q.id DESC`
+        );
+
+        // Formater les quizzes pour inclure le nombre de questions
+        let formattedQuizzes = quizzes.map((quizz) => {
+            return {
+                id: quizz.id,
+                name: quizz.name,
+                status: quizz.status,
+                ownerName: quizz.ownerName || 'N/A',
+                questions: Array.isArray(quizz.questions)
+                    ? quizz.questions.length
+                    : (typeof quizz.questions === 'string'
+                        ? JSON.parse(quizz.questions).length
+                        : 0),
+                participants: parseInt(quizz.participants) || 0
+            };
+        });
+
+        return res.status(200).json({ quizzes: formattedQuizzes });
+    } catch (error) {
+        console.error('Error fetching admin quizzes:', error);
+        return res.status(500).json({
+            error: 'Internal server error',
+            message: error.message
+        });
+    }
+});
+
+app.delete('/api/admin/quizzes/:id', async (req, res) => {
+    try {
+        const tokenCookie = req.cookies.token;
+
+        if (!tokenCookie) {
+            return res.status(401).json({
+                error: 'Token manquant',
+                message: 'Aucun token d\'authentification fourni'
+            });
+        }
+
+        const token = JSON.parse(tokenCookie);
+        const decoded = await verifyToken(token);
+        if (!decoded) {
+            return res.status(401).json({
+                error: 'Token invalide',
+                message: 'Le token fourni est invalide'
+            });
+        }
+
+        // Vérifier que l'utilisateur est admin
+        const [adminRows] = await sequelize.query(
+            `SELECT id, role FROM users WHERE id = :userId AND role = 'admin' AND actif = true`,
+            {
+                replacements: { userId: decoded.userId }
+            }
+        );
+
+        if (!adminRows || adminRows.length === 0) {
+            return res.status(403).json({
+                error: 'Accès refusé',
+                message: 'Vous n\'avez pas les droits nécessaires pour accéder à cette ressource',
+            });
+        }
+
+        const quizId = req.params.id;
+
+        // Supprimer le quiz
+        const [result] = await sequelize.query(
+            'DELETE FROM quizzs WHERE id = :quizId',
+            {
+                replacements: { quizId }
+            }
+        );
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({
+                error: 'Not Found',
+                message: 'Quiz introuvable'
+            });
+        }
+
+        return res.status(200).json({ message: 'Quiz supprimé avec succès' });
+    } catch (error) {
+        console.error('Error deleting quiz:', error);
+        return res.status(500).json({
+            error: 'Internal server error',
+            message: error.message
+        });
+    }
+});
+
+app.post('/api/admin/quizzes/:id/toggle', async (req, res) => {
+    try {
+        const tokenCookie = req.cookies.token;
+
+        if (!tokenCookie) {
+            return res.status(401).json({
+                error: 'Token manquant',
+                message: 'Aucun token d\'authentification fourni'
+            });
+        }
+
+        const token = JSON.parse(tokenCookie);
+        const decoded = await verifyToken(token);
+        if (!decoded) {
+            return res.status(401).json({
+                error: 'Token invalide',
+                message: 'Le token fourni est invalide'
+            });
+        }
+
+        // Vérifier que l'utilisateur est admin
+        const [adminRows] = await sequelize.query(
+            `SELECT id, role FROM users WHERE id = :userId AND role = 'admin' AND actif = true`,
+            {
+                replacements: { userId: decoded.userId }
+            }
+        );
+
+        if (!adminRows || adminRows.length === 0) {
+            return res.status(403).json({
+                error: 'Accès refusé',
+                message: 'Vous n\'avez pas les droits nécessaires pour accéder à cette ressource',
+            });
+        }
+
+        const quizId = req.params.id;
+
+        // Récupérer le statut actuel du quiz
+        const [quizRows] = await sequelize.query(
+            'SELECT status FROM quizzs WHERE id = :quizId LIMIT 1',
+            {
+                replacements: { quizId }
+            }
+        );
+
+        if (!quizRows || quizRows.length === 0) {
+            return res.status(404).json({
+                error: 'Not Found',
+                message: 'Quiz introuvable'
+            });
+        }
+
+        const currentStatus = quizRows[0].status;
+        let newStatus;
+
+        // Déterminer le nouveau statut
+        switch (currentStatus) {
+            case 'pending':
+                newStatus = 'started';
+                break;
+            case 'started':
+                newStatus = 'finish';
+                break;
+            default:
+                return res.status(400).json({
+                    error: 'Invalid operation',
+                    message: `Impossible de changer le statut d'un quiz avec le statut '${currentStatus}'`
+                });
+        }
+
+        // Mettre à jour le statut
+        await sequelize.query(
+            'UPDATE quizzs SET status = :status WHERE id = :quizId',
+            {
+                replacements: { status: newStatus, quizId }
+            }
+        );
+
+        return res.status(200).json({
+            message: `Statut du quiz mis à jour avec succès`,
+            status: newStatus
+        });
+    } catch (error) {
+        console.error('Error toggling quiz status:', error);
+        return res.status(500).json({
+            error: 'Internal server error',
+            message: error.message
+        });
+    }
+});
+
+app.post('/api/admin/users/:id/toggle', async (req, res) => {
+    try {
+        const tokenCookie = req.cookies.token;
+
+        if (!tokenCookie) {
+            return res.status(401).json({
+                error: 'Token manquant',
+                message: 'Aucun token d\'authentification fourni'
+            });
+        }
+
+        const token = JSON.parse(tokenCookie);
+        const decoded = await verifyToken(token);
+        if (!decoded) {
+            return res.status(401).json({
+                error: 'Token invalide',
+                message: 'Le token fourni est invalide'
+            });
+        }
+
+        // Vérifier que l'utilisateur est admin
+        const [adminRows] = await sequelize.query(
+            `SELECT id, role FROM users WHERE id = :userId AND role = 'admin' AND actif = true`,
+            {
+                replacements: { userId: decoded.userId }
+            }
+        );
+
+        if (!adminRows || adminRows.length === 0) {
+            return res.status(403).json({
+                error: 'Accès refusé',
+                message: 'Vous n\'avez pas les droits nécessaires pour accéder à cette ressource',
+            });
+        }
+
+        const userId = req.params.id;
+
+        // Empêcher l'admin de se désactiver lui-même
+        if (parseInt(userId) === decoded.userId) {
+            return res.status(400).json({
+                error: 'Opération invalide',
+                message: 'Vous ne pouvez pas modifier votre propre statut'
+            });
+        }
+
+        // Récupérer le statut actuel de l'utilisateur
+        const [userRows] = await sequelize.query(
+            'SELECT actif FROM users WHERE id = :userId LIMIT 1',
+            {
+                replacements: { userId }
+            }
+        );
+
+        if (!userRows || userRows.length === 0) {
+            return res.status(404).json({
+                error: 'Not Found',
+                message: 'Utilisateur introuvable'
+            });
+        }
+
+        const currentStatus = userRows[0].actif;
+        const newStatus = !currentStatus;
+
+        // Mettre à jour le statut
+        await sequelize.query(
+            'UPDATE users SET actif = :actif WHERE id = :userId',
+            {
+                replacements: { actif: newStatus, userId }
+            }
+        );
+
+        return res.status(200).json({
+            message: `Utilisateur ${newStatus ? 'activé' : 'désactivé'} avec succès`,
+            actif: newStatus
+        });
+    } catch (error) {
+        console.error('Error toggling user status:', error);
+        return res.status(500).json({
+            error: 'Internal server error',
+            message: error.message
+        });
+    }
+});
+
+app.get('/api/user/my-quizzes', async (req, res) => {
+    try {
+        const tokenCookie = req.cookies.token;
+
+        if (!tokenCookie) {
+            return res.status(401).json({
+                error: 'Token manquant',
+                message: 'Aucun token d\'authentification fourni'
+            });
+        }
+
+        const token = JSON.parse(tokenCookie);
+        const decoded = await verifyToken(token);
+        if (!decoded) {
+            return res.status(401).json({
+                error: 'Token invalide',
+                message: 'Le token fourni est invalide'
+            });
+        }
+
+        const userId = decoded.userId;
+
+        // Récupérer tous les quiz auxquels l'utilisateur a participé
+        const [participations] = await sequelize.query(
+            `SELECT
+                q.id as quizId,
+                q.name as quizName,
+                r.id as answerId,
+                r.createdAt as submittedAt,
+                r.answers,
+                u.fullname as ownerName
+             FROM reponses r
+             JOIN quizzs q ON r.quizzId = q.id
+             LEFT JOIN users u ON q.ownerId = u.id
+             WHERE r.userId = :userId
+             ORDER BY r.createdAt DESC`,
+            {
+                replacements: { userId }
+            }
+        );
+
+        // Calculer les scores pour chaque participation
+        const quizzesWithScores = participations.map(p => {
+            const answers = typeof p.answers === 'string' ? JSON.parse(p.answers) : p.answers;
+
+            let score = 0;
+            let total = 0;
+
+            if (Array.isArray(answers)) {
+                answers.forEach(answer => {
+                    if (answer.type === 'qcm') {
+                        total++;
+                        if (answer.isCorrect === true) {
+                            score++;
+                        }
+                    }
+                });
+            }
+
+            return {
+                quizId: p.quizId,
+                quizName: p.quizName,
+                answerId: p.answerId,
+                ownerName: p.ownerName || 'N/A',
+                score: score,
+                total: total,
+                percentage: total > 0 ? Math.round((score / total) * 100) : 0,
+                submittedAt: p.submittedAt
+            };
+        });
+
+        return res.status(200).json({
+            count: quizzesWithScores.length,
+            quizzes: quizzesWithScores
+        });
+    } catch (error) {
+        console.error('Error fetching user quizzes:', error);
+        return res.status(500).json({
+            error: 'Internal server error',
+            message: error.message
+        });
+    }
+});
+
+app.get('/api/admin/online-users', async (req, res) => {
+    try {
+        const tokenCookie = req.cookies.token;
+
+        if (!tokenCookie) {
+            return res.status(401).json({
+                error: 'Token manquant',
+                message: 'Aucun token d\'authentification fourni'
+            });
+        }
+
+        const token = JSON.parse(tokenCookie);
+        const decoded = await verifyToken(token);
+        if (!decoded) {
+            return res.status(401).json({
+                error: 'Token invalide',
+                message: 'Le token fourni est invalide'
+            });
+        }
+
+        // Vérifier que l'utilisateur est admin
+        const [adminRows] = await sequelize.query(
+            `SELECT id, role FROM users WHERE id = :userId AND role = 'admin' AND actif = true`,
+            {
+                replacements: { userId: decoded.userId }
+            }
+        );
+
+        if (!adminRows || adminRows.length === 0) {
+            return res.status(403).json({
+                error: 'Accès refusé',
+                message: 'Vous n\'avez pas les droits nécessaires pour accéder à cette ressource',
+            });
+        }
+
+        // Nettoyer les sessions inactives avant de retourner la liste
+        const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);
+        for (const [userId, userData] of onlineUsers.entries()) {
+            if (userData.lastActivity < tenMinutesAgo) {
+                onlineUsers.delete(userId);
+            }
+        }
+
+        // Convertir la Map en tableau
+        const onlineUsersList = Array.from(onlineUsers.values()).map(user => ({
+            userId: user.userId,
+            fullname: user.fullname,
+            email: user.email,
+            role: user.role,
+            lastActivity: user.lastActivity
+        }));
+
+        return res.status(200).json({
+            count: onlineUsersList.length,
+            users: onlineUsersList
+        });
+    } catch (error) {
+        console.error('Error fetching online users:', error);
+        return res.status(500).json({
+            error: 'Internal server error',
+            message: error.message
+        });
+    }
 });
 
 // Gestionnaire d'erreurs global

@@ -46,6 +46,17 @@
         </select>
       </div>
 
+      <!-- Captcha -->
+      <div class="bg-blue-50 border-2 border-blue-200 rounded-xl p-4">
+        <label class="text-gray-700 font-medium block mb-2">
+          Vérification (prouvez que vous n'êtes pas un robot) <span class="text-red-500">*</span>
+        </label>
+        <p class="text-gray-600 mb-3">Combien font <span id="captcha-question" class="font-bold text-blue-600"></span> ?</p>
+        <input id="captcha-answer" name="captcha" type="number" required
+               class="w-full p-3 rounded-xl bg-white border-2 border-blue-300 focus:outline-none focus:ring-2 ring-blue-500"
+               placeholder="Votre réponse">
+      </div>
+
       <button id="submitBtn" type="submit" class="w-full py-3 mt-4 rounded-xl text-white font-semibold text-lg shadow-lg hover:opacity-90 transition" style="background-color:#F26F7F;">
         S'inscrire
       </button>
@@ -57,6 +68,21 @@
   </div>
 
   <script>
+    // Générer une question de captcha simple
+    let captchaNum1, captchaNum2, captchaResult;
+
+    function generateCaptcha() {
+      captchaNum1 = Math.floor(Math.random() * 10) + 1;
+      captchaNum2 = Math.floor(Math.random() * 10) + 1;
+      captchaResult = captchaNum1 + captchaNum2;
+
+      document.getElementById('captcha-question').textContent = `${captchaNum1} + ${captchaNum2}`;
+      document.getElementById('captcha-answer').value = '';
+    }
+
+    // Générer le captcha au chargement
+    window.addEventListener('DOMContentLoaded', generateCaptcha);
+
     document.getElementById('registerForm').addEventListener('submit', async function(e) {
       e.preventDefault();
 
@@ -65,6 +91,14 @@
       const password = document.getElementById('password').value;
       const password2 = document.getElementById('password2').value;
       const role = document.getElementById('role').value;
+      const captchaAnswer = parseInt(document.getElementById('captcha-answer').value);
+
+      // Vérifier le captcha
+      if (captchaAnswer !== captchaResult) {
+        alert('Erreur de vérification. La réponse au calcul est incorrecte.');
+        generateCaptcha();
+        return;
+      }
 
       if (password !== password2) {
         alert('Les mots de passe ne correspondent pas.');
@@ -81,6 +115,7 @@
 
       if (data.error) {
         alert(data.message);
+        generateCaptcha();
       } else {
         alert('Inscription réussie ! Vous pouvez maintenant vous connecter.');
         window.location.href = '/login';

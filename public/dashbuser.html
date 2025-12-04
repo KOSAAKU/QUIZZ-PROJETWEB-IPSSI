@@ -23,56 +23,40 @@
     <main class="container mx-auto px-6 py-12">
         <h1 class="text-3xl font-bold text-gray-800 mb-6">Dashboard Utilisateur</h1>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <!-- Section Amis -->
-            <div class="bg-white rounded-lg shadow-lg p-6">
-                <h2 class="text-2xl font-bold text-gray-800 mb-4">Mes Amis</h2>
-                <form method="GET" action="/user/friends/search" class="space-y-4">
-                    <input type="text" name="search" placeholder="Rechercher un ami..." class="w-full p-2 rounded-lg border border-gray-300">
-                    <button type="submit" class="w-full btn-primary py-2 rounded-lg">Chercher</button>
-                </form>
-                <div class="mt-4">
-                    <h3 class="font-bold">Ma liste d'amis</h3>
-                    <ul class="mt-2">
-                        <!-- Friend list items here -->
-                    </ul>
-                </div>
+        <!-- Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+            <div class="bg-blue-100 p-6 rounded-lg">
+                <p class="text-3xl font-bold" id="total-quizzes">0</p>
+                <p class="text-gray-600">Quiz Répondus</p>
             </div>
+            <div class="bg-green-100 p-6 rounded-lg">
+                <p class="text-3xl font-bold" id="average-score">0%</p>
+                <p class="text-gray-600">Score Moyen</p>
+            </div>
+            <div class="bg-purple-100 p-6 rounded-lg">
+                <p class="text-3xl font-bold" id="best-score">0%</p>
+                <p class="text-gray-600">Meilleur Score</p>
+            </div>
+        </div>
 
-            <!-- Section Créer un Quiz -->
-            <div class="bg-white rounded-lg shadow-lg p-6">
-                <h2 class="text-2xl font-bold text-gray-800 mb-4">Créer un Quiz</h2>
-                <a href="/quizz/create" class="btn-primary w-full py-2 rounded-lg text-center inline-block">Créer un nouveau quiz</a>
-            </div>
-
-            <!-- Section Mes Quiz -->
-            <div class="bg-white rounded-lg shadow-lg p-6">
-                <h2 class="text-2xl font-bold text-gray-800 mb-4">Mes Quiz</h2>
-                <!-- List of user's quizzes -->
-            </div>
-
-            <!-- Section Quiz Disponibles -->
-            <div class="bg-white rounded-lg shadow-lg p-6 md:col-span-2">
-                <h2 class="text-2xl font-bold text-gray-800 mb-4">Quiz Disponibles</h2>
-                <!-- Tabs for friends' quizzes and public quizzes -->
-            </div>
-
-            <!-- Section Mes Résultats -->
-            <div class="bg-white rounded-lg shadow-lg p-6">
-                <h2 class="text-2xl font-bold text-gray-800 mb-4">Mes Résultats</h2>
-                <!-- History of quizzes taken -->
-            </div>
-            
-            <!-- Section Défis -->
-            <div class="bg-white rounded-lg shadow-lg p-6">
-                <h2 class="text-2xl font-bold text-gray-800 mb-4">Défis</h2>
-                <!-- Challenges section -->
-            </div>
-
-            <!-- Section Statistiques -->
-            <div class="bg-white rounded-lg shadow-lg p-6">
-                <h2 class="text-2xl font-bold text-gray-800 mb-4">Statistiques</h2>
-                <!-- User stats -->
+        <!-- Section Mes Participations -->
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">Mes Quiz</h2>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead>
+                        <tr class="bg-gray-200">
+                            <th class="p-3">Quiz</th>
+                            <th class="p-3">Créé par</th>
+                            <th class="p-3">Score</th>
+                            <th class="p-3">Pourcentage</th>
+                            <th class="p-3">Date</th>
+                        </tr>
+                    </thead>
+                    <tbody id="quizzes-tbody">
+                        <!-- Quiz rows here -->
+                    </tbody>
+                </table>
             </div>
         </div>
     </main>
@@ -82,5 +66,102 @@
             <p>&copy; 2025 Quizzeo - Tous droits réservés</p>
         </div>
     </footer>
+    <script>
+        let quizzes = [];
+
+        // Charger les quiz de l'utilisateur
+        async function loadQuizzes() {
+            try {
+                const response = await fetch('/api/user/my-quizzes', {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include'
+                });
+
+                if (response.status === 401) {
+                    window.location.href = '/login';
+                    return;
+                }
+
+                const data = await response.json();
+                if (!data) return;
+
+                quizzes = data.quizzes || [];
+                displayQuizzes();
+                updateStats();
+            } catch (error) {
+                console.error('Erreur lors de la récupération des quiz:', error);
+                alert('Erreur lors de la récupération des quiz');
+            }
+        }
+
+        // Afficher les quiz
+        function displayQuizzes() {
+            const tbody = document.getElementById('quizzes-tbody');
+            tbody.innerHTML = '';
+
+            if (quizzes.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="p-6 text-center text-gray-500">Vous n\'avez répondu à aucun quiz</td></tr>';
+                return;
+            }
+
+            quizzes.forEach(quiz => {
+                // Couleur du badge selon le score
+                let scoreBadgeClass = 'bg-red-100 text-red-700';
+                if (quiz.percentage >= 80) {
+                    scoreBadgeClass = 'bg-green-100 text-green-700';
+                } else if (quiz.percentage >= 50) {
+                    scoreBadgeClass = 'bg-yellow-100 text-yellow-700';
+                }
+
+                // Formater la date
+                const submittedDate = new Date(quiz.submittedAt);
+                const formattedDate = submittedDate.toLocaleDateString('fr-FR', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+
+                const tr = document.createElement('tr');
+                tr.className = 'border-b hover:bg-gray-50';
+                tr.innerHTML = `
+                    <td class="p-3 font-medium">${quiz.quizName}</td>
+                    <td class="p-3 text-gray-600">${quiz.ownerName}</td>
+                    <td class="p-3">${quiz.score}/${quiz.total}</td>
+                    <td class="p-3">
+                        <span class="px-2 py-1 ${scoreBadgeClass} rounded text-xs font-semibold">${quiz.percentage}%</span>
+                    </td>
+                    <td class="p-3 text-gray-600 text-sm">${formattedDate}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Mettre à jour les statistiques
+        function updateStats() {
+            document.getElementById('total-quizzes').textContent = quizzes.length;
+
+            if (quizzes.length > 0) {
+                // Calculer le score moyen
+                const totalPercentage = quizzes.reduce((sum, quiz) => sum + quiz.percentage, 0);
+                const averageScore = Math.round(totalPercentage / quizzes.length);
+                document.getElementById('average-score').textContent = averageScore + '%';
+
+                // Trouver le meilleur score
+                const bestScore = Math.max(...quizzes.map(q => q.percentage));
+                document.getElementById('best-score').textContent = bestScore + '%';
+            } else {
+                document.getElementById('average-score').textContent = '0%';
+                document.getElementById('best-score').textContent = '0%';
+            }
+        }
+
+        // Charger les données au démarrage
+        window.addEventListener('DOMContentLoaded', () => {
+            loadQuizzes();
+        });
+    </script>
 </body>
 </html>
