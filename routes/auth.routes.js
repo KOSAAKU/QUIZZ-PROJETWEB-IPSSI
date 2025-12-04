@@ -8,6 +8,10 @@ import { onlineUsers } from '../middleware/onlineUsers.js';
 const router = express.Router();
 
 // GET routes
+router.get('/', async (req, res) => {
+    res.sendFile('public/index.html', { root: '.' });
+});
+
 router.get('/login', async (req, res) => {
     res.sendFile('public/login.html', { root: '.' });
 });
