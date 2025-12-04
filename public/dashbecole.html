@@ -57,7 +57,7 @@
                         return response.json();
                     })
                     .then(payload => {
-                        const quizzes = payload.quizzes || [];
+                        const quizzes = payload.quizzs || [];
                         const tbody = document.querySelector('table tbody');
                         tbody.innerHTML = '';
 
