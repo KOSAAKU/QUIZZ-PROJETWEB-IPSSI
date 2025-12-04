@@ -380,6 +380,38 @@ app.post('/quizzes', async (req, res) => {
     }
 });
 
+// Route pour récupérer un quiz
+app.get('/api/quizzes/:id', async (req, res) => {
+  try {
+    const quizId = req.params.id;
+    
+    // Récupérer le quiz depuis la base de données PostgreSQL
+    const [quiz] = await sequelize.query(
+      'SELECT id, name, questions FROM quizzs WHERE id = :id',
+      { replacements: { id: quizId } }
+    );
+    
+    if (!quiz || quiz.length === 0) {
+      return res.status(404).json({ error: 'Quiz non trouvé' });
+    }
+    
+    const quizData = quiz[0];
+    // Si questions est stocké en JSON, le parser
+    const questions = typeof quizData.questions === 'string' 
+      ? JSON.parse(quizData.questions) 
+      : quizData.questions;
+    
+    res.json({
+      id: quizData.id,
+      name: quizData.name,
+      questions: questions
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Erreur serveur', message: err.message });
+  }
+});
+
 // Gestionnaire d'erreurs global
 app.use((err, req, res, next) => {
     console.error('Unhandled error:', err);
