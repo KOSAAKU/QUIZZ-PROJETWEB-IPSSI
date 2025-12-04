@@ -201,6 +201,23 @@ app.get('/quizz/create', async (req, res) => {
     }
 });
 
+app.get('/quizz/:id', async (req, res) => {
+    const cookies = req.cookies;
+    if (!cookies.token) {
+        return res.redirect('/login');
+    }
+    const token = JSON.parse(cookies.token);
+    const decoded = await verifyToken(token);
+    if (!decoded) {
+        return res.redirect('/login');
+    }
+    const user = await getUserById(decoded.userId);
+    if (!user) {
+        return res.redirect('/login');
+    }
+    res.sendFile('public/quizz.html', { root: '.' });
+});
+
 app.get('/dashboard/quizz/:id', async (req, res) => {
     const cookies = req.cookies;
     if (!cookies.token) {
