@@ -12,7 +12,7 @@
 
     <header class="bg-white shadow-md">
         <nav class="container mx-auto px-6 py-3 flex justify-between items-center">
-            <a href="/" class="text-2xl font-bold text-gray-800">🎯 Quizzeo Admin</a>
+            <a href="/" class="text-2xl font-bold text-gray-800"> <img class="h-9" src="/assets/img/img1.png" alt=""> </a>
             <div>
                 <a href="/logout" class="px-4 py-2 leading-none rounded-lg btn-secondary text-white">Déconnexion</a>
             </div>
@@ -22,7 +22,52 @@
     <main class="container mx-auto px-6 py-12">
         <h1 class="text-3xl font-bold text-gray-800 mb-6">Dashboard Admin</h1>
 
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
+            <div class="bg-blue-100 p-6 rounded-lg">
+                <p class="text-3xl font-bold" id="total-users">0</p>
+                <p class="text-gray-600">Utilisateurs</p>
+            </div>
+            <div class="bg-green-100 p-6 rounded-lg">
+                <p class="text-3xl font-bold" id="total-quizzes">0</p>
+                <p class="text-gray-600">Quiz Total</p>
+            </div>
+            <div class="bg-yellow-100 p-6 rounded-lg">
+                <p class="text-3xl font-bold" id="active-users">0</p>
+                <p class="text-gray-600">Utilisateurs Actifs</p>
+            </div>
+            <div class="bg-purple-100 p-6 rounded-lg">
+                <p class="text-3xl font-bold" id="inactive-users">0</p>
+                <p class="text-gray-600">Utilisateurs Inactifs</p>
+            </div>
+            <div class="bg-emerald-100 p-6 rounded-lg">
+                <p class="text-3xl font-bold" id="online-users">0</p>
+                <p class="text-gray-600">En ligne</p>
+            </div>
+        </div>
+
+        <div class="space-y-8">
+            <!-- Section Utilisateurs Connectés -->
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">Utilisateurs Connectés</h2>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead>
+                            <tr class="bg-gray-200">
+                                <th class="p-3">ID</th>
+                                <th class="p-3">Nom</th>
+                                <th class="p-3">Email</th>
+                                <th class="p-3">Rôle</th>
+                                <th class="p-3">Dernière activité</th>
+                            </tr>
+                        </thead>
+                        <tbody id="online-users-tbody">
+                            <!-- Online user rows here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
             <!-- Section Gestion des Utilisateurs -->
             <div class="bg-white rounded-lg shadow-lg p-6">
                 <h2 class="text-2xl font-bold text-gray-800 mb-4">Gestion des Utilisateurs</h2>
@@ -34,54 +79,37 @@
                                 <th class="p-3">Nom</th>
                                 <th class="p-3">Email</th>
                                 <th class="p-3">Rôle</th>
+                                <th class="p-3">Statut</th>
                                 <th class="p-3">Actions</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody id="users-tbody">
                             <!-- User rows here -->
                         </tbody>
                     </table>
                 </div>
-                 <a href="#" class="mt-4 inline-block btn-primary text-white py-2 px-4 rounded-lg">Ajouter un utilisateur</a>
             </div>
 
-            <!-- Section Gestion des Quiz -->
+            <!-- Section Gestion des Quizz -->
             <div class="bg-white rounded-lg shadow-lg p-6">
-                <h2 class="text-2xl font-bold text-gray-800 mb-4">Gestion des Quiz</h2>
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">Gestion des Quizz</h2>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left">
                         <thead>
                             <tr class="bg-gray-200">
                                 <th class="p-3">ID</th>
                                 <th class="p-3">Titre</th>
-                                <th class="p-3">Auteur</th>
+                                <th class="p-3">Propriétaire</th>
+                                <th class="p-3">Questions</th>
+                                <th class="p-3">Participants</th>
+                                <th class="p-3">Statut</th>
                                 <th class="p-3">Actions</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody id="quizzes-tbody">
                             <!-- Quiz rows here -->
                         </tbody>
                     </table>
-                </div>
-                <a href="#" class="mt-4 inline-block btn-primary text-white py-2 px-4 rounded-lg">Ajouter un quiz</a>
-            </div>
-
-            <!-- Section Statistiques -->
-            <div class="bg-white rounded-lg shadow-lg p-6 lg:col-span-2">
-                <h2 class="text-2xl font-bold text-gray-800 mb-4">Statistiques</h2>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
-                    <div class="bg-blue-100 p-4 rounded-lg">
-                        <p class="text-3xl font-bold">0</p>
-                        <p class="text-gray-600">Utilisateurs</p>
-                    </div>
-                    <div class="bg-green-100 p-4 rounded-lg">
-                        <p class="text-3xl font-bold">0</p>
-                        <p class="text-gray-600">Quiz</p>
-                    </div>
-                    <div class="bg-yellow-100 p-4 rounded-lg">
-                        <p class="text-3xl font-bold">0</p>
-                        <p class="text-gray-600">Questions</p>
-                    </div>
                 </div>
             </div>
         </div>
@@ -94,47 +122,336 @@
     </footer>
     <script>
         let users = [];
-        fetch('/users', {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            credentials: 'include'
-            })
-            .then(response => {
+        let quizzes = [];
+        let onlineUsers = [];
+
+        // Charger les utilisateurs en ligne
+        async function loadOnlineUsers() {
+            try {
+                const response = await fetch('/api/admin/online-users', {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include'
+                });
+
+                if (response.status === 401) {
+                    window.location.href = '/login';
+                    return;
+                }
+
+                const data = await response.json();
+                if (!data) return;
+
+                onlineUsers = data.users || [];
+                displayOnlineUsers();
+                updateStats();
+            } catch (error) {
+                console.error('Erreur lors de la récupération des utilisateurs en ligne:', error);
+            }
+        }
+
+        // Afficher les utilisateurs en ligne
+        function displayOnlineUsers() {
+            const tbody = document.getElementById('online-users-tbody');
+            tbody.innerHTML = '';
+
+            if (onlineUsers.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="p-6 text-center text-gray-500">Aucun utilisateur connecté</td></tr>';
+                return;
+            }
+
+            onlineUsers.forEach(user => {
+                const roleBadge = {
+                    'admin': '<span class="px-2 py-1 bg-purple-100 text-purple-700 rounded text-xs font-semibold">Admin</span>',
+                    'ecole': '<span class="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs font-semibold">École</span>',
+                    'entreprise': '<span class="px-2 py-1 bg-cyan-100 text-cyan-700 rounded text-xs font-semibold">Entreprise</span>',
+                    'user': '<span class="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs font-semibold">Utilisateur</span>'
+                }[user.role] || user.role;
+
+                // Formater la date de dernière activité
+                const lastActivity = new Date(user.lastActivity);
+                const now = new Date();
+                const diffMinutes = Math.floor((now - lastActivity) / 60000);
+                let activityText;
+
+                if (diffMinutes < 1) {
+                    activityText = 'À l\'instant';
+                } else if (diffMinutes < 60) {
+                    activityText = `Il y a ${diffMinutes} min`;
+                } else {
+                    activityText = lastActivity.toLocaleString('fr-FR');
+                }
+
+                const tr = document.createElement('tr');
+                tr.className = 'border-b hover:bg-gray-50';
+                tr.innerHTML = `
+                    <td class="p-3">#${user.userId}</td>
+                    <td class="p-3 font-medium">${user.fullname}</td>
+                    <td class="p-3 text-gray-600">${user.email}</td>
+                    <td class="p-3">${roleBadge}</td>
+                    <td class="p-3 text-gray-600">${activityText}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Charger les utilisateurs
+        async function loadUsers() {
+            try {
+                const response = await fetch('/users', {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include'
+                });
+
                 if (response.status === 401) {
                     alert('Session expirée, veuillez vous reconnecter');
                     window.location.href = '/login';
                     return;
                 }
-                return response.json();
-            })
-            .then(data => {
+
+                const data = await response.json();
                 if (!data) return;
 
                 users = data.users;
-                const tbody = document.querySelector('table tbody');
-                users.forEach(user => {
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                        <td>${user.id}</td>
-                        <td>${user.fullname}</td>
-                        <td>${user.email}</td>
-                        <td>${user.role}</td>
-                        <td>
-                            <form method="POST" action="/admin/users/delete" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?');">
-                                <input type="hidden" name="id" value="${user.id}">
-                                <button type="submit">Supprimer</button>
-                            </form>
-                        </td>
-                    `;
-                    tbody.appendChild(tr);
-                });
-            })
-            .catch(error => {
+                displayUsers();
+                updateStats();
+            } catch (error) {
                 console.error('Erreur lors de la récupération des utilisateurs:', error);
                 alert('Erreur lors de la récupération des utilisateurs');
+            }
+        }
+
+        // Afficher les utilisateurs
+        function displayUsers() {
+            const tbody = document.getElementById('users-tbody');
+            tbody.innerHTML = '';
+
+            users.forEach(user => {
+                const statusBadge = user.actif
+                    ? '<span class="px-2 py-1 bg-green-100 text-green-700 rounded text-xs font-semibold">Actif</span>'
+                    : '<span class="px-2 py-1 bg-red-100 text-red-700 rounded text-xs font-semibold">Inactif</span>';
+
+                const roleBadge = {
+                    'admin': '<span class="px-2 py-1 bg-purple-100 text-purple-700 rounded text-xs font-semibold">Admin</span>',
+                    'ecole': '<span class="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs font-semibold">École</span>',
+                    'entreprise': '<span class="px-2 py-1 bg-cyan-100 text-cyan-700 rounded text-xs font-semibold">Entreprise</span>',
+                    'user': '<span class="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs font-semibold">Utilisateur</span>'
+                }[user.role] || user.role;
+
+                const tr = document.createElement('tr');
+                tr.className = 'border-b hover:bg-gray-50';
+                tr.innerHTML = `
+                    <td class="p-3">#${user.id}</td>
+                    <td class="p-3 font-medium">${user.fullname}</td>
+                    <td class="p-3 text-gray-600">${user.email}</td>
+                    <td class="p-3">${roleBadge}</td>
+                    <td class="p-3">${statusBadge}</td>
+                    <td class="p-3">
+                        <button onclick="toggleUserStatus(${user.id}, ${user.actif})"
+                                class="px-3 py-1 ${user.actif ? 'bg-yellow-500 hover:bg-yellow-600' : 'bg-green-500 hover:bg-green-600'} text-white rounded text-sm font-medium transition mr-2">
+                            ${user.actif ? 'Désactiver' : 'Activer'}
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
             });
+        }
+
+        // Charger les quiz
+        async function loadQuizzes() {
+            try {
+                const response = await fetch('/api/admin/quizzes', {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include'
+                });
+
+                if (response.status === 401) {
+                    window.location.href = '/login';
+                    return;
+                }
+
+                if (!response.ok) {
+                    console.error('Erreur HTTP:', response.status, response.statusText);
+                    const errorData = await response.json();
+                    console.error('Détails:', errorData);
+                    return;
+                }
+
+                const data = await response.json();
+                console.log('Données des quizzes reçues:', data);
+
+                if (!data || !data.quizzes) {
+                    console.warn('Aucune donnée de quiz reçue');
+                    return;
+                }
+
+                quizzes = data.quizzes;
+                displayQuizzes();
+                updateStats();
+            } catch (error) {
+                console.error('Erreur lors de la récupération des quiz:', error);
+            }
+        }
+
+        // Afficher les quiz
+        function displayQuizzes() {
+            const tbody = document.getElementById('quizzes-tbody');
+            tbody.innerHTML = '';
+
+            console.log('Affichage des quizzes, nombre:', quizzes.length);
+
+            if (!quizzes || quizzes.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="p-6 text-center text-gray-500">Aucun quiz disponible</td></tr>';
+                return;
+            }
+
+            quizzes.forEach(quiz => {
+                console.log('Quiz:', quiz);
+                const statusBadge = {
+                    'pending': '<span class="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs font-semibold">En attente</span>',
+                    'started': '<span class="px-2 py-1 bg-green-100 text-green-700 rounded text-xs font-semibold">Actif</span>',
+                    'finish': '<span class="px-2 py-1 bg-red-100 text-red-700 rounded text-xs font-semibold">Terminé</span>'
+                }[quiz.status] || quiz.status;
+
+                // Déterminer le bouton de basculement selon le statut
+                let toggleButton = '';
+                if (quiz.status === 'pending') {
+                    toggleButton = `<button onclick="toggleQuizStatus(${quiz.id}, 'pending')"
+                                class="px-3 py-1 bg-green-500 hover:bg-green-600 text-white rounded text-sm font-medium transition mr-2">
+                            Démarrer
+                        </button>`;
+                } else if (quiz.status === 'started') {
+                    toggleButton = `<button onclick="toggleQuizStatus(${quiz.id}, 'started')"
+                                class="px-3 py-1 bg-yellow-500 hover:bg-yellow-600 text-white rounded text-sm font-medium transition mr-2">
+                            Terminer
+                        </button>`;
+                }
+
+                const tr = document.createElement('tr');
+                tr.className = 'border-b hover:bg-gray-50';
+                tr.innerHTML = `
+                    <td class="p-3">#${quiz.id}</td>
+                    <td class="p-3 font-medium">${quiz.name}</td>
+                    <td class="p-3 text-gray-600">${quiz.ownerName || 'N/A'}</td>
+                    <td class="p-3 text-center">${quiz.questions || 0}</td>
+                    <td class="p-3 text-center">${quiz.participants || 0}</td>
+                    <td class="p-3">${statusBadge}</td>
+                    <td class="p-3">
+                        ${toggleButton}
+                        <button onclick="deleteQuiz(${quiz.id})"
+                                class="px-3 py-1 bg-red-500 hover:bg-red-600 text-white rounded text-sm font-medium transition">
+                            Supprimer
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Activer/Désactiver un utilisateur
+        async function toggleUserStatus(userId, currentStatus) {
+            const action = currentStatus ? 'désactiver' : 'activer';
+            if (!confirm(`Êtes-vous sûr de vouloir ${action} cet utilisateur ?`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/admin/users/${userId}/toggle`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include'
+                });
+
+                if (!response.ok) {
+                    throw new Error('Erreur lors de la mise à jour');
+                }
+
+                alert(`Utilisateur ${action === 'activer' ? 'activé' : 'désactivé'} avec succès`);
+                await loadUsers();
+            } catch (error) {
+                console.error('Erreur:', error);
+                alert('Une erreur est survenue lors de la mise à jour');
+            }
+        }
+
+        // Changer le statut d'un quiz
+        async function toggleQuizStatus(quizId, currentStatus) {
+            const actions = {
+                'pending': 'démarrer',
+                'started': 'terminer'
+            };
+            const action = actions[currentStatus];
+
+            if (!confirm(`Êtes-vous sûr de vouloir ${action} ce quiz ?`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/admin/quizzes/${quizId}/toggle`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include'
+                });
+
+                if (!response.ok) {
+                    throw new Error('Erreur lors de la mise à jour');
+                }
+
+                alert(`Quiz ${action === 'démarrer' ? 'démarré' : 'terminé'} avec succès`);
+                await loadQuizzes();
+            } catch (error) {
+                console.error('Erreur:', error);
+                alert('Une erreur est survenue lors de la mise à jour');
+            }
+        }
+
+        // Supprimer un quiz
+        async function deleteQuiz(quizId) {
+            if (!confirm('Êtes-vous sûr de vouloir supprimer ce quiz ?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/admin/quizzes/${quizId}`, {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include'
+                });
+
+                if (!response.ok) {
+                    throw new Error('Erreur lors de la suppression');
+                }
+
+                alert('Quiz supprimé avec succès');
+                await loadQuizzes();
+            } catch (error) {
+                console.error('Erreur:', error);
+                alert('Une erreur est survenue lors de la suppression');
+            }
+        }
+
+        // Mettre à jour les statistiques
+        function updateStats() {
+            document.getElementById('total-users').textContent = users.length;
+            document.getElementById('active-users').textContent = users.filter(u => u.actif).length;
+            document.getElementById('inactive-users').textContent = users.filter(u => !u.actif).length;
+            document.getElementById('total-quizzes').textContent = quizzes.length;
+            document.getElementById('online-users').textContent = onlineUsers.length;
+        }
+
+        // Charger les données au démarrage
+        window.addEventListener('DOMContentLoaded', () => {
+            loadUsers();
+            loadQuizzes();
+            loadOnlineUsers();
+
+            // Rafraîchir la liste des utilisateurs en ligne toutes les 30 secondes
+            setInterval(() => {
+                loadOnlineUsers();
+            }, 30000);
+        });
     </script>
 </body>
 </html>
