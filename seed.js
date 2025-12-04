@@ -38,7 +38,8 @@ User.init({
     },
 }, {
     sequelize,
-    modelName: "User"
+    modelName: "User",
+    tableName: "users"
 });
 
 class Quizz extends Model {}; 
@@ -72,7 +73,8 @@ Quizz.init({
     }
 }, {
     sequelize,
-    modelName: "Quizz"
+    modelName: "Quizz",
+    tableName: "quizz"
 });
 
 class Reponses extends Model {}; 
@@ -101,5 +103,6 @@ Reponses.init({
     },
 }, {
     sequelize,
-    modelName: "Reponses"
+    modelName: "Reponses",
+    tableName: "reponses"
 });
