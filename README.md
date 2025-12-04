@@ -1,297 +1,210 @@
-# QUIZZ - Application Web IPSSI
+# Quizz App - IPSSI Web Project
 
-Application web de gestion de quiz développée pour le projet IPSSI. Cette plateforme permet aux écoles et entreprises de créer des quiz, et aux utilisateurs d'y répondre.
+Application web de création et de gestion de quiz avec authentification multi-rôles et génération automatique de questions par IA.
 
-## 📋 Table des matières
-
-- [Aperçu](#aperçu)
-- [Fonctionnalités](#fonctionnalités)
-- [Technologies utilisées](#technologies-utilisées)
-- [Prérequis](#prérequis)
-- [Installation](#installation)
-- [Configuration](#configuration)
-- [Démarrage](#démarrage)
-- [Architecture du projet](#architecture-du-projet)
-- [Modèles de données](#modèles-de-données)
-- [API Endpoints](#api-endpoints)
-- [Système d'authentification](#système-dauthentification)
-- [Gestion des rôles](#gestion-des-rôles)
-- [Contribuer](#contribuer)
-
-## 🎯 Aperçu
-
-QUIZZ est une application web complète qui permet :
-- Aux écoles et entreprises de créer et gérer des questionnaires
-- Aux utilisateurs de répondre aux quiz disponibles
-- Aux administrateurs de superviser l'ensemble de la plateforme
-- Une gestion fine des accès basée sur les rôles utilisateurs
-
-## ✨ Fonctionnalités
+## Fonctionnalités
 
 ### Pour tous les utilisateurs
-- ✅ Inscription et connexion sécurisées
-- ✅ Authentification par JWT avec cookies sécurisés
-- ✅ Tableau de bord personnalisé selon le rôle
+- Inscription et connexion sécurisées avec JWT
+- Authentification par cookies HTTP-only
+- Système de sessions avec suivi des utilisateurs actifs
 
-### Pour les écoles et entreprises
-- ✅ Création de quiz avec questions personnalisées
-- ✅ Gestion de leurs propres quiz
-- ✅ Consultation des réponses des utilisateurs
+### Rôles utilisateurs
 
-### Pour les administrateurs
-- ✅ Gestion complète des utilisateurs
-- ✅ Activation/désactivation des comptes
-- ✅ Vue d'ensemble de tous les quiz
+#### Admin
+- Gestion complète des utilisateurs (activation/désactivation)
+- Gestion de tous les quiz de la plateforme
+- Visualisation des utilisateurs connectés en temps réel
+- Statistiques globales sur les quiz et participations
 
-## 🛠 Technologies utilisées
+#### Ecole / Entreprise
+- Création de quiz personnalisés (QCM et questions ouvertes)
+- Génération automatique de questions avec l'IA Gemini
+- Gestion du cycle de vie des quiz (pending → started → finish)
+- Visualisation des participants et de leurs résultats
+- Consultation détaillée des réponses individuelles
+
+#### User
+- Participation aux quiz actifs
+- Consultation de l'historique des quiz complétés
+- Visualisation des scores et résultats
+
+### Génération de Quiz par IA
+- Intégration avec Google Gemini AI
+- Génération automatique de questions basées sur un thème
+- Support des questions QCM et ouvertes
+- Personnalisation selon le contexte (école/entreprise)
+
+## Architecture technique
 
 ### Backend
-- **Node.js** - Environnement d'exécution JavaScript
-- **Express.js** - Framework web minimaliste
-- **MySQL** - Base de données relationnelle
-- **Sequelize** - ORM pour MySQL
-- **JWT** - Authentification par tokens
-- **bcrypt** - Hashage sécurisé des mots de passe
+- **Framework**: Express.js
+- **Base de données**: MySQL avec Sequelize
+- **Authentification**: JWT + bcrypt
+- **Sessions**: express-session avec stockage en mémoire
+- **IA**: Google Generative AI (Gemini)
 
-### Frontend
-- **HTML5/CSS3** - Interface utilisateur
-- **JavaScript** - Logique client
+### Structure du projet
 
-### Autres
-- **cookie-parser** - Gestion des cookies
-- **dotenv** - Gestion des variables d'environnement
+```
+QUIZZ-PROJETWEB-IPSSI/
+├── config/
+│   └── database.js          # Configuration Sequelize
+├── controllers/
+│   ├── AuthController.js    # Gestion de l'authentification
+│   ├── TokenController.js   # Gestion des tokens JWT
+│   ├── UserController.js    # CRUD utilisateurs
+│   ├── QuizzController.js   # CRUD quiz
+│   ├── GeminiController.js  # Intégration IA Gemini
+│   └── LoggerController.js  # Logs des requêtes
+├── public/
+│   ├── dashbadmin.html      # Dashboard administrateur
+│   ├── dashbecole.html      # Dashboard école
+│   ├── dashbentreprise.html # Dashboard entreprise
+│   ├── dashbuser.html       # Dashboard utilisateur
+│   ├── create_quizz_*.html  # Pages de création de quiz
+│   ├── quizz.html           # Interface de passage de quiz
+│   ├── quiz_participants.html # Liste des participants
+│   ├── quiz_answers.html    # Détail des réponses
+│   ├── login.html           # Page de connexion
+│   ├── register.html        # Page d'inscription
+│   └── suspended.html       # Page compte suspendu
+├── server.js                # Point d'entrée de l'application
+├── seed.js                  # Données de test
+├── adminacc.js              # Création compte admin
+└── package.json
+```
 
-## 📦 Prérequis
+## Installation
 
-Avant de commencer, assurez-vous d'avoir installé :
+### Prérequis
+- Node.js (v14 ou supérieur)
+- MySQL (v8 ou supérieur)
+- Compte Google Cloud avec accès à l'API Gemini
 
-- [Node.js](https://nodejs.org/) (version 14 ou supérieure)
-- [MySQL](https://www.mysql.com/) (version 5.7 ou supérieure)
-- [npm](https://www.npmjs.com/) ou [yarn](https://yarnpkg.com/)
+### Étapes d'installation
 
-## 🚀 Installation
-
-1. **Cloner le repository**
+1. Cloner le dépôt
 ```bash
 git clone https://github.com/KOSAAKU/QUIZZ-PROJETWEB-IPSSI.git
 cd QUIZZ-PROJETWEB-IPSSI
 ```
 
-2. **Installer les dépendances**
+2. Installer les dépendances
 ```bash
 npm install
 ```
 
-3. **Créer la base de données**
-```sql
-CREATE DATABASE quizzeo;
-```
+3. Configurer les variables d'environnement
 
-## ⚙️ Configuration
-
-1. **Créer le fichier `.env`**
-
-Copiez le fichier `.env.example` et renommez-le en `.env` :
-```bash
-cp .env.example .env
-```
-
-2. **Configurer les variables d'environnement**
-
-Éditez le fichier `.env` avec vos paramètres :
+Créer un fichier `.env` à la racine du projet (voir `.env.example`):
 ```env
-# Configuration de la base de données
 DB_HOST=localhost
-DB_PORT=3306
 DB_USER=root
 DB_PASSWORD=votre_mot_de_passe
-DB_NAME=quizzeo
-
-# Clé secrète JWT (générez une clé aléatoire sécurisée)
-JWT_SECRET=votre_cle_secrete_super_securisee
+DB_NAME=quizz_db
+JWT_SECRET=votre_secret_jwt
+GEMINI_API_KEY=votre_clé_api_gemini
 ```
 
-> **Note de sécurité** : Générez une clé JWT forte et unique pour la production. Ne commitez jamais votre fichier `.env` !
+4. Créer la base de données
+```bash
+mysql -u root -p
+CREATE DATABASE quizz_db;
+```
 
-## 🎬 Démarrage
+5. Initialiser la base de données
 
-Lancez le serveur de développement :
+Le serveur créera automatiquement les tables au démarrage grâce à Sequelize sync.
 
+6. Lancer l'application
 ```bash
 npm start
 ```
 
-L'application sera accessible sur [http://localhost:3000](http://localhost:3000)
+L'application sera accessible sur `http://localhost:3000`
 
-La base de données se synchronisera automatiquement au démarrage grâce à `sequelize.sync()`.
+## Utilisation
 
-## 📁 Architecture du projet
-
-```
-QUIZZ-PROJETWEB-IPSSI/
-├── server.js                    # Point d'entrée de l'application
-├── config/
-│   └── database.js             # Configuration Sequelize
-├── controllers/
-│   ├── AuthController.js       # Logique d'authentification
-│   ├── TokenController.js      # Gestion des JWT
-│   ├── UserController.js       # CRUD utilisateurs
-│   └── LoggerController.js     # Logger des requêtes
-├── seed.js                     # Définition des modèles Sequelize
-├── public/                     # Fichiers statiques frontend
-│   ├── index.html             # Page d'accueil
-│   ├── login.html             # Page de connexion
-│   ├── register.html          # Page d'inscription
-│   ├── dashbadmin.html        # Dashboard administrateur
-│   ├── dashbecole.html        # Dashboard école
-│   ├── dashbentreprise.html   # Dashboard entreprise
-│   └── create_quiz.html       # Page de création de quiz
-├── .env.example               # Modèle de configuration
-├── .gitignore                 # Fichiers à ignorer par Git
-├── package.json               # Dépendances et scripts
-├── CLAUDE.md                  # Instructions pour Claude Code
-└── README.md                  # Documentation (ce fichier)
+### Créer un compte administrateur
+```bash
+node adminacc.js
 ```
 
-## 🗄 Modèles de données
+### Endpoints API principaux
 
-### User (Utilisateur)
-```javascript
-{
-  id: INTEGER (PK, Auto-increment),
-  email: STRING (UNIQUE, NOT NULL),
-  password: STRING (NOT NULL, hashé avec bcrypt),
-  fullname: STRING,
-  role: ENUM('admin', 'ecole', 'entreprise', 'user'),
-  actif: BOOLEAN (par défaut: true),
-  createdAt: DATE
-}
-```
+#### Authentification
+- `POST /register` - Inscription
+- `POST /login` - Connexion
+- `GET /logout` - Déconnexion
 
-### Quizz
-```javascript
-{
-  id: INTEGER (PK, Auto-increment),
-  name: STRING (NOT NULL),
-  questions: JSON (tableau de questions),
-  ownerId: INTEGER (FK -> User.id),
-  status: STRING (ex: 'pending', 'published'),
-  createdAt: DATE
-}
-```
+#### Utilisateurs
+- `GET /users` - Liste des utilisateurs (admin)
+- `POST /api/admin/users/:id/toggle` - Activer/désactiver un utilisateur (admin)
+- `GET /api/admin/online-users` - Utilisateurs connectés (admin)
 
-### Reponses
-```javascript
-{
-  id: INTEGER (PK, Auto-increment),
-  quizzId: INTEGER (FK -> Quizz.id),
-  userId: INTEGER (FK -> User.id),
-  answers: JSON (réponses de l'utilisateur),
-  createdAt: DATE
-}
-```
+#### Quiz
+- `POST /api/quizzes` - Créer un quiz (école/entreprise)
+- `GET /quizzes` - Mes quiz (école/entreprise)
+- `GET /quizzes/:id` - Détails d'un quiz
+- `POST /quizzes/:id/submit` - Soumettre des réponses
+- `GET /quizz/:id/toggle` - Changer le statut d'un quiz
+- `DELETE /quizz/:id/delete` - Supprimer un quiz
+- `GET /api/quizzes/:id/participants` - Liste des participants
+- `GET /api/quizzes/:id/answers/:answerId` - Réponses d'un participant
 
-## 🔌 API Endpoints
+#### IA
+- `POST /api/quizz/generate` - Générer des questions avec l'IA (école/entreprise)
 
-### Authentification
+#### Admin
+- `GET /api/admin/quizzes` - Tous les quiz (admin)
+- `DELETE /api/admin/quizzes/:id` - Supprimer un quiz (admin)
+- `POST /api/admin/quizzes/:id/toggle` - Changer le statut d'un quiz (admin)
 
-| Méthode | Endpoint | Description | Accès |
-|---------|----------|-------------|-------|
-| POST | `/register` | Inscription d'un nouvel utilisateur | Public |
-| POST | `/login` | Connexion utilisateur | Public |
-| GET | `/dashboard` | Accès au tableau de bord | Authentifié |
+### Statuts des quiz
+- `pending` - Quiz créé mais non démarré
+- `started` - Quiz actif, disponible aux participants
+- `finish` - Quiz terminé, plus de participation possible
 
-### Utilisateurs
+## Sécurité
 
-| Méthode | Endpoint | Description | Accès |
-|---------|----------|-------------|-------|
-| GET | `/users` | Liste tous les utilisateurs | Admin uniquement |
+- Mots de passe hashés avec bcrypt
+- Authentification par tokens JWT
+- Cookies HTTP-only pour prévenir les attaques XSS
+- Validation des rôles sur toutes les routes protégées
+- Vérification des permissions (propriété des ressources)
+- Sessions utilisateur avec timeout d'inactivité (10 minutes)
+- Protection contre les opérations auto-destructrices (admin ne peut pas se désactiver)
 
-### Quiz
+## Technologies utilisées
 
-| Méthode | Endpoint | Description | Accès |
-|---------|----------|-------------|-------|
-| GET | `/quizzes` | Liste les quiz de l'utilisateur | Authentifié |
-| POST | `/quizzes` | Créer un nouveau quiz | Écoles & Entreprises |
-| GET | `/quizz/create` | Page de création de quiz | Écoles & Entreprises |
+### Backend
+- **Express.js** - Framework web
+- **Sequelize** - ORM pour MySQL
+- **bcrypt** - Hachage de mots de passe
+- **jsonwebtoken** - Authentification JWT
+- **cookie-parser** - Gestion des cookies
+- **express-session** - Gestion des sessions
+- **dotenv** - Variables d'environnement
+- **@google/generative-ai** - Intégration Gemini AI
 
-## 🔐 Système d'authentification
+### Frontend
+- HTML5 / CSS3 / JavaScript vanilla
+- Fetch API pour les requêtes HTTP
 
-L'application utilise un système d'authentification sécurisé :
+## Contribution
 
-### Inscription
-1. Validation des données (email unique, rôle valide)
-2. Hashage du mot de passe avec **bcrypt**
-3. Création du compte utilisateur dans la base de données
+Les contributions sont les bienvenues. Pour les changements majeurs, veuillez d'abord ouvrir une issue pour discuter de ce que vous aimeriez changer.
 
-### Connexion
-1. Vérification des identifiants avec `bcrypt.compare()`
-2. Génération d'un JWT avec `jsonwebtoken` (validité : 30 jours)
-3. Stockage du token dans un cookie **httpOnly** sécurisé
+## Auteurs
 
-### Vérification des tokens
-```javascript
-// Le token est stocké dans un cookie au format JSON
-const tokenCookie = req.cookies.token;
-const token = JSON.parse(tokenCookie);
-const decoded = verifyToken(token);
-```
+Projet réalisé dans le cadre de la soutenance du projet de développement web à l'IPSSI.
 
-### Protection des routes
-Toutes les routes protégées suivent ce schéma :
-1. Extraction du token depuis `req.cookies.token`
-2. Parsing JSON du cookie
-3. Vérification avec `verifyToken(token)`
-4. Contrôle que l'utilisateur existe et est actif (`actif = true`)
-5. Vérification du rôle si nécessaire
+## Licence
 
-## 👥 Gestion des rôles
+ISC
 
-L'application supporte 4 rôles distincts :
-
-### 🔴 Admin
-- Accès complet à la plateforme
-- Gestion de tous les utilisateurs
-- Activation/désactivation des comptes
-- Vue sur tous les quiz
-
-### 🟢 École (`ecole`)
-- Création et gestion de quiz
-- Consultation des réponses
-- Dashboard dédié
-
-### 🟡 Entreprise (`entreprise`)
-- Création et gestion de quiz
-- Consultation des réponses
-- Dashboard dédié
-
-### 🔵 Utilisateur (`user`)
-- Participation aux quiz disponibles
-- Consultation de ses réponses
-
-## 🤝 Contribuer
-
-Les contributions sont les bienvenues ! Pour contribuer :
-
-1. Fork le projet
-2. Créez une branche pour votre fonctionnalité (`git checkout -b feature/AmazingFeature`)
-3. Committez vos changements (`git commit -m 'Add some AmazingFeature'`)
-4. Pushez vers la branche (`git push origin feature/AmazingFeature`)
-5. Ouvrez une Pull Request
-
-## 📝 License
-
-Ce projet est sous licence ISC.
-
-## 🔗 Liens utiles
+## Liens
 
 - [Repository GitHub](https://github.com/KOSAAKU/QUIZZ-PROJETWEB-IPSSI)
-- [Issues](https://github.com/KOSAAKU/QUIZZ-PROJETWEB-IPSSI/issues)
-
-## 📧 Contact
-
-Pour toute question ou suggestion, n'hésitez pas à ouvrir une issue sur GitHub.
-
----
-
-Développé avec ❤️ pour le projet IPSSI
+- [Signaler un bug](https://github.com/KOSAAKU/QUIZZ-PROJETWEB-IPSSI/issues)
