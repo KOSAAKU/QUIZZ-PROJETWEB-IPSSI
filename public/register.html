@@ -63,11 +63,24 @@
     </form>
 
     <p class="text-center text-gray-700 text-sm mt-5">
-      Déjà un compte ? <a href="/login" class="link">Se connecter</a>
+      Déjà un compte ? <a href="#" id="login-link" class="link">Se connecter</a>
     </p>
   </div>
 
   <script>
+    // Update login link to include redirect parameter
+    document.addEventListener('DOMContentLoaded', function() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const redirect = urlParams.get('redirect');
+      const loginLink = document.getElementById('login-link');
+
+      if (redirect) {
+        loginLink.href = `/login?redirect=${encodeURIComponent(redirect)}`;
+      } else {
+        loginLink.href = '/login';
+      }
+    });
+
     // Générer une question de captcha simple
     let captchaNum1, captchaNum2, captchaResult;
 
@@ -118,7 +131,15 @@
         generateCaptcha();
       } else {
         alert('Inscription réussie ! Vous pouvez maintenant vous connecter.');
-        window.location.href = '/login';
+        // Get redirect parameter from URL if present
+        const urlParams = new URLSearchParams(window.location.search);
+        const redirect = urlParams.get('redirect');
+
+        if (redirect) {
+          window.location.href = `/login?redirect=${encodeURIComponent(redirect)}`;
+        } else {
+          window.location.href = '/login';
+        }
       }
     });
   </script>

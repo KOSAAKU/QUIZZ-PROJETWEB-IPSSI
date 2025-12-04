@@ -272,7 +272,7 @@
                 numQuestions: numQuestions
             };
 
-            fetch('/api/quizz/generate', {
+            fetch('/quizz/api/quizz/generate', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(quizData)
@@ -365,7 +365,7 @@
                 questions: questions
             };
 
-            fetch('/api/quizzes', {
+            fetch('/quizz/api/quizzes', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(quizData)

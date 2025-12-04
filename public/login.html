@@ -39,7 +39,7 @@
 
         <p class="text-center text-gray-700 text-sm mt-5">
             Pas de compte ?
-            <a href="/register" class="link">
+            <a href="#" id="register-link" class="link">
                 S'inscrire
             </a>
         </p>
@@ -49,9 +49,30 @@
         document.addEventListener('submit', function(event) {
             event.preventDefault();
         });
+
+        // Get redirect parameter from URL if present
+        function getRedirectUrl() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get('redirect') || '/dashboard';
+        }
+
+        // Update register link to include redirect parameter
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const redirect = urlParams.get('redirect');
+            const registerLink = document.getElementById('register-link');
+
+            if (redirect) {
+                registerLink.href = `/register?redirect=${encodeURIComponent(redirect)}`;
+            } else {
+                registerLink.href = '/register';
+            }
+        });
+
         function login() {
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
+            const redirectUrl = getRedirectUrl();
 
             fetch('/login', {
                 method: 'POST',
@@ -65,7 +86,8 @@
                 if (data.error) {
                     alert(data.message);
                 } else {
-                    window.location.href = '/dashboard';
+                    // Redirect to the intended page or dashboard
+                    window.location.href = redirectUrl;
                 }
             })
             .catch(error => {
