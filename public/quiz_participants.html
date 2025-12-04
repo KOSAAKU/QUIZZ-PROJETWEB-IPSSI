@@ -173,7 +173,7 @@
             }
 
             try {
-                const response = await fetch(`/api/quizzes/${quizId}/participants`);
+                const response = await fetch(`/quizz/api/quizzes/${quizId}/participants`);
 
                 if (!response.ok) {
                     throw new Error('Impossible de charger les participants');

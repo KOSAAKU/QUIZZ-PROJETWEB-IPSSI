@@ -47,9 +47,74 @@
             <p>&copy; 2025 Quizzeo - Tous droits réservés</p>
         </div>
         <script>
-           
+            function shareQuiz(quizId, quizName) {
+                const baseUrl = window.location.origin;
+                const quizUrl = `${baseUrl}/quizz/${quizId}`;
+
+                // Try to copy to clipboard
+                if (navigator.clipboard) {
+                    navigator.clipboard.writeText(quizUrl).then(() => {
+                        alert(`Lien copié dans le presse-papier!\n\n${quizUrl}\n\nPartagez ce lien avec les participants pour qu'ils puissent accéder au quiz "${quizName}".`);
+                    }).catch(() => {
+                        // Fallback if clipboard API fails
+                        prompt('Copiez ce lien pour partager le quiz:', quizUrl);
+                    });
+                } else {
+                    // Fallback for older browsers
+                    prompt('Copiez ce lien pour partager le quiz:', quizUrl);
+                }
+            }
+
+            function toggleQuiz(quizId, currentStatus) {
+                if (!confirm(`Êtes-vous sûr de vouloir ${currentStatus === 'pending' ? 'démarrer' : 'terminer'} ce quiz?`)) {
+                    return;
+                }
+
+                fetch(`/quizz/${quizId}/toggle`, {
+                    method: 'GET',
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Échec du changement de statut');
+                    }
+                    return response.json();
+                })
+                .then(() => {
+                    alert('Statut du quiz mis à jour avec succès!');
+                    location.reload();
+                })
+                .catch(error => {
+                    console.error('Error toggling quiz:', error);
+                    alert('Erreur lors du changement de statut: ' + error.message);
+                });
+            }
+
+            function deleteQuiz(quizId, quizName) {
+                if (!confirm(`Êtes-vous sûr de vouloir supprimer le quiz "${quizName}"? Cette action est irréversible.`)) {
+                    return;
+                }
+
+                fetch(`/quizz/${quizId}/delete`, {
+                    method: 'DELETE',
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Échec de la suppression');
+                    }
+                    return response.json();
+                })
+                .then(() => {
+                    alert('Quiz supprimé avec succès!');
+                    location.reload();
+                })
+                .catch(error => {
+                    console.error('Error deleting quiz:', error);
+                    alert('Erreur lors de la suppression: ' + error.message);
+                });
+            }
+
             document.addEventListener('DOMContentLoaded', function() {
-                fetch('/quizzes')
+                fetch('/quizz/quizzes')
                     .then(response => {
                         if (!response.ok) {
                             throw new Error(`Erreur réseau: ${response.status} ${response.statusText}`);
@@ -63,7 +128,7 @@
 
                         if (quizzes.length === 0) {
                             const emptyRow = document.createElement('tr');
-                            emptyRow.innerHTML = `<td class="p-3" colspan="4">Aucun quizz trouvé.</td>`;
+                            emptyRow.innerHTML = `<td class="p-3" colspan="5">Aucun quizz trouvé.</td>`;
                             tbody.appendChild(emptyRow);
                             return;
                         }
@@ -83,8 +148,9 @@
                                 </td>
                                 <td class="p-3">
                                     <a href="/dashboard/quizz/${quiz.id}/" class="text-green-600 hover:underline mr-4">Participations</a>
-                                    <a href="/quizz/${quiz.id}/toggle" class="text-blue-600 hover:underline mr-4">${quiz.status === 'pending' ? 'Démarrer' : quiz.status === 'started' ? 'Terminer' : ''}</a>
-                                    <a href="/quizz/${quiz.id}/delete" class="text-red-600 hover:underline">Supprimer</a>
+                                    ${quiz.status === 'started' ? `<button onclick="shareQuiz(${quiz.id}, '${title.replace(/'/g, "\\'")}')" class="text-purple-600 hover:underline mr-4">Partager</button>` : ''}
+                                    ${quiz.status !== 'finish' ? `<button onclick="toggleQuiz(${quiz.id}, '${quiz.status}')" class="text-blue-600 hover:underline mr-4">${quiz.status === 'pending' ? 'Démarrer' : 'Terminer'}</button>` : ''}
+                                    <button onclick="deleteQuiz(${quiz.id}, '${title.replace(/'/g, "\\'")}')" class="text-red-600 hover:underline">Supprimer</button>
                                 </td>
                             `;
                             tbody.appendChild(row);
@@ -93,7 +159,7 @@
                     .catch(error => {
                         console.error('Error fetching quizzes:', error);
                         const tbody = document.querySelector('table tbody');
-                        tbody.innerHTML = `<tr><td class="p-3" colspan="4">Erreur lors du chargement des quizzs: ${error.message}</td></tr>`;
+                        tbody.innerHTML = `<tr><td class="p-3" colspan="5">Erreur lors du chargement des quizzs: ${error.message}</td></tr>`;
                     });
             });
         </script>

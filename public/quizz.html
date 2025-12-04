@@ -100,7 +100,7 @@
             }
 
             try {
-                const response = await fetch(`/quizzes/${quizId}`);
+                const response = await fetch(`/quizz/quizzes/${quizId}`);
 
                 if (!response.ok) {
                     throw new Error('Quiz introuvable');
@@ -225,7 +225,7 @@
             }
 
             try {
-                const response = await fetch(`/quizzes/${quizId}/submit`, {
+                const response = await fetch(`/quizz/quizzes/${quizId}/submit`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ answers })
