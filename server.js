@@ -90,7 +90,7 @@ app.use((req, res, next) => {
                 if (decoded && decoded.userId) {
                     const user = await getUserById(decoded.userId);
                     if (user && !user.actif) {
-                        return res.sendFile('public/ban.html', { root: '.' });
+                        return res.sendFile('public/suspended.html', { root: '.' });
                     }
                 }
             }).catch(() => {
@@ -199,6 +199,23 @@ app.get('/quizz/create', async (req, res) => {
     } else if (user.role === 'entreprise') {
         return res.sendFile('public/create_quizz_entreprise.html', { root: '.' });
     }
+});
+
+app.get('/quizz/:id', async (req, res) => {
+    const cookies = req.cookies;
+    if (!cookies.token) {
+        return res.redirect('/login');
+    }
+    const token = JSON.parse(cookies.token);
+    const decoded = await verifyToken(token);
+    if (!decoded) {
+        return res.redirect('/login');
+    }
+    const user = await getUserById(decoded.userId);
+    if (!user) {
+        return res.redirect('/login');
+    }
+    res.sendFile('public/quizz.html', { root: '.' });
 });
 
 app.get('/dashboard/quizz/:id', async (req, res) => {
