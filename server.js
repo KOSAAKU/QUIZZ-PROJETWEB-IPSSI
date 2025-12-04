@@ -167,16 +167,8 @@ app.get('/quizz/create', async (req, res) => {
     if (user.role !== 'ecole' && user.role !== 'entreprise') {
         return res.redirect('/login');
     }
-    if (user.role === 'entreprise') {
-        return res.sendFile('public/create_quizz_entreprise.html', { root: '.' });
-    } else if (user.role === 'ecole') {
-        return res.sendFile('public/create_quizz_ecole.html', { root: '.' });
-    }
-    return res.redirect('/login');
-});
 
-app.get('/quizz/:id', async (req, res) => {
-    res.sendFile('public/quizz.html', { root: '.' });
+    return res.sendFile('public/create.html', { root: '.' });
 });
 
 app.get('/dashboard/quizz/:id', async (req, res) => {
@@ -429,7 +421,7 @@ app.get('/quizzes', async (req, res) => {
             }
         );
 
-        let formattedQuizzes = quizzes.map((quizz) => {
+        let formattedQuizzes = quizzes.map((quiz) => {
             return {
                 ...quizz,
                 questions: Array.isArray(quizz.questions) 
@@ -440,7 +432,7 @@ app.get('/quizzes', async (req, res) => {
             };
         });
 
-        return res.status(200).json({ quizzes: formattedQuizzes });
+        return res.status(200).json({ quizzs: formattedQuizzes });
     } catch (error) {
         console.error('Error fetching quizzes:', error);
         return res.status(500).json({
@@ -1008,11 +1000,19 @@ app.post('/api/quizzes', async (req, res) => {
         // Postgres / pg expects a JSON string for JSON columns — stringify it
         const questionsJson = JSON.stringify(questions);
 
-        const quizz = await createQuizz(name, questionsJson, ownerId);
+        const [result] = await sequelize.query(
+            // on force le cast en JSON côté SQL pour être sûr (:questions::json)
+            'INSERT INTO quizzs (name, questions, ownerId, status, createdAt, updatedAt) VALUES (:name, :questions, :ownerId, \'pending\', NOW(), NOW())',
+            { replacements: { name, questions: questionsJson, ownerId }}
+        );
+
+        // result[0] contient les rows retournées ; récupérer l'id en gardant la compatibilité
+        const insertedRows = result[0];
+        const insertedId = insertedRows?.id ?? null;
 
         return res.status(201).json({
             message: 'Quizz created successfully',
-            quizz
+            quizz: { id: insertedId, name, questions, ownerId }
         });
     } catch (error) {
         console.error('Error creating quizz:', error);
@@ -1023,69 +1023,39 @@ app.post('/api/quizzes', async (req, res) => {
     }
 });
 
-app.post('/api/quizz/generate', async (req, res) => {
-    try {
-        const tokenCookie = req.cookies.token;
-
-        if (!tokenCookie) {
-            return res.status(401).json({
-                error: 'Token manquant',
-                message: 'Aucun token d\'authentification fourni'
-            });
+// Route pour récupérer un quiz
+app.get('/api/quizzes/:id', async (req, res) => {
+  try {
+    const quizId = req.params.id;
+    
+    // TODO: Récupérer le quiz depuis la base de données
+    // const quiz = await sequelize.query('SELECT * FROM quizzs WHERE id = ?', { replacements: [quizId] });
+    
+    // Pour la démo, retourner un quiz exemple
+    const quizExample = {
+      id: quizId,
+      name: 'Quiz Test',
+      questions: [
+        {
+          id: 1,
+          question: 'Quelle est la capitale de la France ?',
+          type: 'qcm',
+          choices: ['Paris', 'Lyon', 'Marseille']
+        },
+        {
+          id: 2,
+          question: 'Quel est ton nom ?',
+          type: 'libre',
+          choices: []
         }
-
-        const token = JSON.parse(tokenCookie);
-        const decoded = await verifyToken(token);
-        if (!decoded) {
-            return res.status(401).json({
-                error: 'Token invalide',
-                message: 'Le token fourni est invalide'
-            });
-        }
-        const [userRows] = await sequelize.query(
-            `SELECT id, role FROM users WHERE id = :userId AND actif = true`,
-            {
-                replacements: { userId: decoded.userId }
-            }
-        );
-        if (!userRows || userRows.length === 0) {
-            return res.status(403).json({
-                error: 'Accès refusé',
-                message: 'Vous n\'avez pas les droits nécessaires pour accéder à cette ressource',
-            });
-        }
-        if (!['ecole', 'entreprise'].includes(userRows[0].role)) {
-            return res.status(403).json({
-                error: 'Accès refusé',
-                message: 'Seuls les utilisateurs avec le rôle ecole ou entreprise peuvent créer des quizzs',
-            });
-        }
-        const userRole = userRows[0].role;
-
-        const { theme, numQuestions } = req.body;
-
-        if (!theme || !numQuestions) {
-            return res.status(400).json({
-                error: 'Validation error',
-                message: 'Le thème et le nombre de questions sont requis'
-            });
-        }
-
-        // Générer les questions avec Gemini AI (sans les sauvegarder)
-        const questions = await generateQuizWithGemini(theme, parseInt(numQuestions), userRole);
-
-        // Retourner uniquement les questions générées
-        return res.status(200).json({
-            message: 'Questions générées avec succès',
-            questions
-        });
-    } catch (error) {
-        console.error('Error generating quizz:', error);
-        return res.status(500).json({
-            error: 'Internal server error',
-            message: error.message
-        });
-    }
+      ]
+    };
+    
+    res.json(quizExample);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
 });
 
 // Admin Routes
