@@ -80,6 +80,32 @@ app.use(async (req, res, next) => {
 import { createQuizz } from './controllers/QuizzController.js';
 import { generateQuizWithGemini } from './controllers/GeminiController.js';
 
+app.use((req, res, next) => {
+    // Check if the user account is active before proceeding
+    const tokenCookie = req.cookies.token;
+    if (tokenCookie) {
+        try {
+            const token = JSON.parse(tokenCookie);
+            verifyToken(token).then(async (decoded) => {
+                if (decoded && decoded.userId) {
+                    const user = await getUserById(decoded.userId);
+                    if (user && !user.actif) {
+                        return res.sendFile('public/ban.html', { root: '.' });
+                    }
+                }
+            }).catch(() => {
+                console.log('Error verifying token in account active check.');
+                res.status(400).send('Invalid token.');
+            });
+        } catch (err) {
+            console.error('Error parsing token cookie:', err);
+            res.status(400).send('Invalid token format.');
+            return;
+        }
+    }
+    next();
+});
+
 // Fonction async pour initialiser la base de données
 async function initDatabase() {
   try {
