@@ -119,6 +119,61 @@ app.get('/quizz/:id', async (req, res) => {
     res.sendFile('public/quizz.html', { root: '.' });
 });
 
+app.get('/dashboard/quizz/:id', async (req, res) => {
+    const cookies = req.cookies;
+    if (!cookies.token) {
+        return res.redirect('/login');
+    }
+
+    const token = JSON.parse(cookies.token);
+    const decoded = await verifyToken(token);
+    if (!decoded) {
+        return res.redirect('/login');
+    }
+
+    const user = await getUserById(decoded.userId);
+    if (!user) {
+        return res.redirect('/login');
+    }
+
+    if (user.role !== 'ecole' && user.role !== 'entreprise') {
+        return res.redirect('/login');
+    }
+
+    res.sendFile('public/quiz_participants.html', { root: '.' });
+});
+
+app.get('/dashboard/quizz/:id/:answerId', async (req, res) => {
+    const cookies = req.cookies;
+    if (!cookies.token) {
+        return res.redirect('/login');
+    }
+
+    const token = JSON.parse(cookies.token);
+    const decoded = await verifyToken(token);
+    if (!decoded) {
+        return res.redirect('/login');
+    }
+
+    const user = await getUserById(decoded.userId);
+    if (!user) {
+        return res.redirect('/login');
+    }
+
+    if (user.role !== 'ecole' && user.role !== 'entreprise') {
+        return res.redirect('/login');
+    }
+
+    res.sendFile('public/quiz_answers.html', { root: '.' });
+});
+
+app.get('/logout', async (req, res) => {
+    res.clearCookie('fullname');
+    res.clearCookie('email');
+    res.clearCookie('token');
+    res.sendFile('public/logout.html', { root: '.' });
+});
+
 app.post('/register', async (req, res) => {
     try {
         const { fullname, email, password, role } = req.body;
@@ -290,15 +345,19 @@ app.get('/quizzes', async (req, res) => {
         const ownerId = userRows[0].id;
 
         const [quizzes] = await sequelize.query(
-            'SELECT * FROM quizzs WHERE ownerId = :ownerId',
+            `SELECT q.*, COUNT(r.id) as participants 
+             FROM quizzs q 
+             LEFT JOIN reponses r ON q.id = r.quizzId 
+             WHERE q.ownerId = :ownerId 
+             GROUP BY q.id`,
             {
-                replacements: { ownerId: ownerId } // TODO: remplacer par l'ID de l'utilisateur connecté
+            replacements: { ownerId: ownerId }
             }
         );
 
         let formattedQuizzes = quizzes.map((quizz) => {
             return {
-                ...quiz,
+                ...quizz,
                 questions: Array.isArray(quizz.questions) 
                     ? quizz.questions.length 
                     : (typeof quizz.questions === 'string' 
@@ -469,6 +528,220 @@ app.get('/quizzes/:id', async (req, res) => {
         return res.status(200).json(quizz);
     } catch (error) {
         console.error('Error fetching quiz:', error);
+        return res.status(500).json({
+            error: 'Internal server error',
+            message: error.message
+        });
+    }
+});
+
+app.get('/api/quizzes/:id/participants', async (req, res) => {
+    try {
+        const quizId = req.params.id;
+
+        // Vérifier l'authentification
+        const tokenCookie = req.cookies.token;
+        if (!tokenCookie) {
+            return res.status(401).json({
+                error: 'Token manquant',
+                message: 'Aucun token d\'authentification fourni'
+            });
+        }
+
+        const token = JSON.parse(tokenCookie);
+        const decoded = await verifyToken(token);
+        if (!decoded) {
+            return res.status(401).json({
+                error: 'Token invalide',
+                message: 'Le token fourni est invalide'
+            });
+        }
+
+        // Vérifier que l'utilisateur est le propriétaire du quiz
+        const [quizRows] = await sequelize.query(
+            'SELECT name, ownerId FROM quizzs WHERE id = :quizId LIMIT 1',
+            {
+                replacements: { quizId }
+            }
+        );
+
+        if (!quizRows || quizRows.length === 0) {
+            return res.status(404).json({
+                error: 'Not Found',
+                message: 'Quiz introuvable'
+            });
+        }
+
+        const quiz = quizRows[0];
+
+        if (quiz.ownerId !== decoded.userId) {
+            return res.status(403).json({
+                error: 'Accès refusé',
+                message: 'Vous n\'avez pas accès à ce quiz'
+            });
+        }
+
+        // Récupérer les participants et leurs scores
+        const [participants] = await sequelize.query(
+            `SELECT
+                r.id as answerId,
+                r.userId,
+                r.answers,
+                r.createdAt as submittedAt,
+                u.fullname as userName,
+                u.email as userEmail
+             FROM reponses r
+             LEFT JOIN users u ON r.userId = u.id
+             WHERE r.quizzId = :quizId
+             ORDER BY r.createdAt DESC`,
+            {
+                replacements: { quizId }
+            }
+        );
+
+        // Calculer les scores pour chaque participant
+        const participantsWithScores = participants.map(p => {
+            const answers = typeof p.answers === 'string' ? JSON.parse(p.answers) : p.answers;
+
+            let score = 0;
+            let total = 0;
+
+            if (Array.isArray(answers)) {
+                answers.forEach(answer => {
+                    if (answer.type === 'qcm') {
+                        total++;
+                        if (answer.isCorrect === true) {
+                            score++;
+                        }
+                    }
+                });
+            }
+
+            return {
+                answerId: p.answerId,
+                userId: p.userId,
+                userName: p.userId === 0 ? 'Anonyme' : p.userName,
+                userEmail: p.userId === 0 ? null : p.userEmail,
+                score: score,
+                total: total,
+                submittedAt: p.submittedAt
+            };
+        });
+
+        return res.status(200).json({
+            quizName: quiz.name,
+            participants: participantsWithScores
+        });
+    } catch (error) {
+        console.error('Error fetching participants:', error);
+        return res.status(500).json({
+            error: 'Internal server error',
+            message: error.message
+        });
+    }
+});
+
+app.get('/api/quizzes/:id/answers/:answerId', async (req, res) => {
+    try {
+        const { id: quizId, answerId } = req.params;
+
+        // Vérifier l'authentification
+        const tokenCookie = req.cookies.token;
+        if (!tokenCookie) {
+            return res.status(401).json({
+                error: 'Token manquant',
+                message: 'Aucun token d\'authentification fourni'
+            });
+        }
+
+        const token = JSON.parse(tokenCookie);
+        const decoded = await verifyToken(token);
+        if (!decoded) {
+            return res.status(401).json({
+                error: 'Token invalide',
+                message: 'Le token fourni est invalide'
+            });
+        }
+
+        // Vérifier que l'utilisateur est le propriétaire du quiz
+        const [quizRows] = await sequelize.query(
+            'SELECT name, ownerId FROM quizzs WHERE id = :quizId LIMIT 1',
+            {
+                replacements: { quizId }
+            }
+        );
+
+        if (!quizRows || quizRows.length === 0) {
+            return res.status(404).json({
+                error: 'Not Found',
+                message: 'Quiz introuvable'
+            });
+        }
+
+        const quiz = quizRows[0];
+
+        if (quiz.ownerId !== decoded.userId) {
+            return res.status(403).json({
+                error: 'Accès refusé',
+                message: 'Vous n\'avez pas accès à ce quiz'
+            });
+        }
+
+        // Récupérer les réponses du participant
+        const [answerRows] = await sequelize.query(
+            `SELECT
+                r.userId,
+                r.answers,
+                r.createdAt as submittedAt,
+                u.fullname as userName,
+                u.email as userEmail
+             FROM reponses r
+             LEFT JOIN users u ON r.userId = u.id
+             WHERE r.id = :answerId AND r.quizzId = :quizId
+             LIMIT 1`,
+            {
+                replacements: { answerId, quizId }
+            }
+        );
+
+        if (!answerRows || answerRows.length === 0) {
+            return res.status(404).json({
+                error: 'Not Found',
+                message: 'Réponses introuvables'
+            });
+        }
+
+        const answerData = answerRows[0];
+        const answers = typeof answerData.answers === 'string'
+            ? JSON.parse(answerData.answers)
+            : answerData.answers;
+
+        // Calculer le score
+        let score = 0;
+        let total = 0;
+
+        if (Array.isArray(answers)) {
+            answers.forEach(answer => {
+                if (answer.type === 'qcm') {
+                    total++;
+                    if (answer.isCorrect === true) {
+                        score++;
+                    }
+                }
+            });
+        }
+
+        return res.status(200).json({
+            quizName: quiz.name,
+            userName: answerData.userId === 0 ? 'Anonyme' : answerData.userName,
+            userEmail: answerData.userId === 0 ? null : answerData.userEmail,
+            score: score,
+            total: total,
+            submittedAt: answerData.submittedAt,
+            answers: answers
+        });
+    } catch (error) {
+        console.error('Error fetching answers:', error);
         return res.status(500).json({
             error: 'Internal server error',
             message: error.message

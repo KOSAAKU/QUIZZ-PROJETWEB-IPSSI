@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Réponses du Participant - Quizzeo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/assets/css/style.css">
+</head>
+
+<body class="bg-gray-100">
+
+    <header class="bg-white shadow-md">
+        <nav class="container mx-auto px-6 py-3 flex justify-between items-center">
+            <a href="/" class="text-2xl font-bold text-gray-800"> <img class="h-9" src="/assets/img/img1.png" alt=""> </a>
+            <div>
+                <button onclick="goBack()" class="px-4 py-2 leading-none rounded-lg btn-secondary text-white">Retour</button>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mx-auto px-6 py-12">
+        <div class="max-w-5xl mx-auto">
+            <div class="bg-white shadow-lg rounded-lg overflow-hidden">
+
+                <!-- Header -->
+                <div class="bg-gray-800 px-8 py-6">
+                    <h1 id="participant-name" class="text-3xl font-bold text-white">Chargement...</h1>
+                    <p id="quiz-name" class="text-gray-300 mt-1">Quiz</p>
+                </div>
+
+            <!-- Loading State -->
+            <div id="loading-container" class="p-12 flex flex-col items-center justify-center">
+                <svg class="animate-spin h-12 w-12 text-indigo-600 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <p class="text-gray-600 text-lg">Chargement des réponses...</p>
+            </div>
+
+            <!-- Error State -->
+            <div id="error-container" class="hidden p-12">
+                <div class="bg-red-50 border-2 border-red-200 rounded-xl p-6 text-center">
+                    <svg class="w-16 h-16 text-red-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <h2 class="text-2xl font-bold text-red-800 mb-2">Erreur</h2>
+                    <p id="error-message" class="text-red-600"></p>
+                </div>
+            </div>
+
+            <!-- Answers Content -->
+            <div id="answers-container" class="hidden p-8">
+
+                <!-- Score Summary -->
+                <div class="bg-blue-100 rounded-lg p-6 mb-8">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-600 font-medium mb-1">Score Total</p>
+                            <p id="score-display" class="text-4xl font-bold text-gray-800">0 / 0</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-sm text-gray-600 font-medium mb-1">Pourcentage</p>
+                            <p id="percentage-display" class="text-4xl font-bold text-blue-600">0%</p>
+                        </div>
+                        <div class="w-32 h-32">
+                            <svg viewBox="0 0 36 36" class="w-full h-full">
+                                <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                                      fill="none"
+                                      stroke="#E5E7EB"
+                                      stroke-width="3"/>
+                                <path id="score-circle" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                                      fill="none"
+                                      stroke="#3B82F6"
+                                      stroke-width="3"
+                                      stroke-dasharray="0, 100"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <p class="text-sm text-gray-600">Soumis le <span id="submitted-date" class="font-medium">-</span></p>
+                    </div>
+                </div>
+
+                <!-- Questions and Answers -->
+                <div id="questions-list" class="space-y-6">
+                    <!-- Les questions seront ajoutées ici -->
+                </div>
+
+            </div>
+
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let quizId = null;
+        let answerId = null;
+
+        // Récupérer les IDs depuis l'URL
+        function getIdsFromUrl() {
+            const pathParts = window.location.pathname.split('/');
+            const quizzIndex = pathParts.indexOf('quizz');
+            if (quizzIndex !== -1) {
+                return {
+                    quizId: pathParts[quizzIndex + 1],
+                    answerId: pathParts[quizzIndex + 2]
+                };
+            }
+            return { quizId: null, answerId: null };
+        }
+
+        // Retour à la page précédente
+        function goBack() {
+            window.location.href = `/dashboard/quizz/${quizId}`;
+        }
+
+        // Afficher une erreur
+        function showError(message) {
+            document.getElementById('loading-container').classList.add('hidden');
+            document.getElementById('error-container').classList.remove('hidden');
+            document.getElementById('error-message').textContent = message;
+        }
+
+        // Formater la date
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('fr-FR', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        // Échapper le HTML
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Charger les réponses
+        async function loadAnswers() {
+            const ids = getIdsFromUrl();
+            quizId = ids.quizId;
+            answerId = ids.answerId;
+
+            if (!quizId || !answerId) {
+                showError('IDs manquants dans l\'URL');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/quizzes/${quizId}/answers/${answerId}`);
+
+                if (!response.ok) {
+                    throw new Error('Impossible de charger les réponses');
+                }
+
+                const data = await response.json();
+
+                // Mettre à jour les informations
+                displayAnswers(data);
+
+                // Masquer le loading et afficher le contenu
+                document.getElementById('loading-container').classList.add('hidden');
+                document.getElementById('answers-container').classList.remove('hidden');
+
+            } catch (error) {
+                console.error('Erreur:', error);
+                showError(error.message || 'Une erreur est survenue lors du chargement des réponses');
+            }
+        }
+
+        // Afficher les réponses
+        function displayAnswers(data) {
+            // Mettre à jour le header
+            document.getElementById('participant-name').textContent = data.userName || 'Participant Anonyme';
+            document.getElementById('quiz-name').textContent = data.quizName;
+
+            // Calculer le score
+            const score = data.score;
+            const total = data.total;
+            const percentage = total > 0 ? Math.round((score / total) * 100) : 0;
+
+            // Mettre à jour le score
+            document.getElementById('score-display').textContent = `${score} / ${total}`;
+            document.getElementById('percentage-display').textContent = `${percentage}%`;
+            document.getElementById('submitted-date').textContent = formatDate(data.submittedAt);
+
+            // Mettre à jour le cercle de progression
+            const circle = document.getElementById('score-circle');
+            circle.setAttribute('stroke-dasharray', `${percentage}, 100`);
+
+            // Afficher les questions et réponses
+            const questionsList = document.getElementById('questions-list');
+            questionsList.innerHTML = '';
+
+            data.answers.forEach((item, index) => {
+                const questionDiv = document.createElement('div');
+                questionDiv.className = 'bg-white border border-gray-200 rounded-lg shadow p-6';
+
+                let statusBadge = '';
+                let statusClass = '';
+
+                if (item.type === 'qcm') {
+                    if (item.isCorrect) {
+                        statusBadge = '<span class="px-3 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded">Correct</span>';
+                    } else {
+                        statusBadge = '<span class="px-3 py-1 bg-red-100 text-red-700 text-xs font-semibold rounded">Incorrect</span>';
+                    }
+                } else {
+                    statusBadge = '<span class="px-3 py-1 bg-yellow-100 text-yellow-700 text-xs font-semibold rounded">À corriger</span>';
+                }
+
+                let answerHTML = '';
+
+                if (item.type === 'qcm') {
+                    answerHTML = `
+                        <div class="mt-4 space-y-3">
+                            <div class="bg-blue-50 border border-blue-200 rounded p-3">
+                                <p class="text-sm text-gray-600 font-medium mb-1">Réponse du participant</p>
+                                <p class="text-gray-800 font-medium">${escapeHtml(item.userAnswer)}</p>
+                            </div>
+                            ${!item.isCorrect ? `
+                            <div class="bg-green-50 border border-green-200 rounded p-3">
+                                <p class="text-sm text-gray-600 font-medium mb-1">Bonne réponse</p>
+                                <p class="text-green-700 font-medium">${escapeHtml(item.correctAnswer)}</p>
+                            </div>
+                            ` : ''}
+                        </div>
+                    `;
+                } else {
+                    answerHTML = `
+                        <div class="mt-4 bg-gray-50 border border-gray-200 rounded p-3">
+                            <p class="text-sm text-gray-600 font-medium mb-2">Réponse du participant</p>
+                            <p class="text-gray-800 whitespace-pre-wrap">${escapeHtml(item.userAnswer)}</p>
+                        </div>
+                    `;
+                }
+
+                questionDiv.innerHTML = `
+                    <div class="flex items-start gap-3 mb-4">
+                        <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 font-bold flex items-center justify-center flex-shrink-0">
+                            ${index + 1}
+                        </div>
+                        <div class="flex-1">
+                            <div class="flex items-center gap-2 mb-2">
+                                <span class="px-2 py-1 ${item.type === 'qcm' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'} text-xs font-semibold rounded uppercase">
+                                    ${item.type === 'qcm' ? 'QCM' : 'Réponse libre'}
+                                </span>
+                                ${statusBadge}
+                            </div>
+                            <p class="text-lg font-medium text-gray-800">${escapeHtml(item.question)}</p>
+                            ${answerHTML}
+                        </div>
+                    </div>
+                `;
+
+                questionsList.appendChild(questionDiv);
+            });
+        }
+
+        // Charger les réponses au chargement de la page
+        window.addEventListener('DOMContentLoaded', loadAnswers);
+    </script>
+
+</body>
+
+</html>
