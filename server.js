@@ -20,7 +20,6 @@ import './seed.js';
 import { loginUser } from './controllers/AuthController.js';
 import { getUserById, registerUser } from './controllers/UserController.js';
 import { verifyToken } from './controllers/TokenController.js';
-import { createQuizz } from './controllers/QuizzController.js';
 
 // Fonction async pour initialiser la base de données
 async function initDatabase() {
@@ -106,12 +105,8 @@ app.get('/quizz/create', async (req, res) => {
     if (user.role !== 'ecole' && user.role !== 'entreprise') {
         return res.redirect('/login');
     }
-    if (user.role === 'entreprise') {
-        return res.sendFile('public/create_quiz_entreprise.html', { root: '.' });
-    } else if (user.role === 'ecole') {
-        return res.sendFile('public/create_quiz_ecole.html', { root: '.' });
-    }
-    return res.redirect('/login');
+
+    return res.sendFile('public/create.html', { root: '.' });
 });
 
 app.post('/register', async (req, res) => {
@@ -302,168 +297,9 @@ app.get('/quizzes', async (req, res) => {
             };
         });
 
-        return res.status(200).json({ quizzes: formattedQuizzes });
+        return res.status(200).json({ quizzs: formattedQuizzes });
     } catch (error) {
         console.error('Error fetching quizzes:', error);
-        return res.status(500).json({
-            error: 'Internal server error',
-            message: error.message
-        });
-    }
-});
-
-app.get('/quizz/:id/toggle', async (req, res) => {
-    try {
-        // check the user is authenticated
-        const tokenCookie = req.cookies.token;
-        if (!tokenCookie) {
-            return res.status(401).json({
-                error: 'Token manquant',
-                message: 'Aucun token d\'authentification fourni'
-            });
-        }
-
-        const token = JSON.parse(tokenCookie);
-        const decoded = await verifyToken(token);
-        if (!decoded) {
-            return res.status(401).json({
-                error: 'Token invalide',
-                message: 'Le token fourni est invalide'
-            });
-        }
-
-        const quizId = req.params.id;
-
-        // get the quiz
-        const [quizRows] = await sequelize.query(
-            'SELECT status FROM quizzs WHERE id = :quizId AND ownerId = :ownerId LIMIT 1',
-            {
-                replacements: { quizId, ownerId: decoded.userId }
-            }
-        );
-
-        if (!quizRows || quizRows.length === 0) {
-            return res.status(404).json({
-                error: 'Not Found',
-                message: 'Quizz not found'
-            });
-        }
-
-        const currentStatus = quizRows[0].status;
-        switch (currentStatus) {
-            case 'pending':
-                // change to started
-                await sequelize.query(
-                    "UPDATE quizzs SET status = 'started' WHERE id = :quizId",
-                    { replacements: { quizId }}
-                );
-                break;
-            case 'started':
-                // change to finish
-                await sequelize.query(
-                    "UPDATE quizzs SET status = 'finish' WHERE id = :quizId",
-                    { replacements: { quizId }}
-                );
-                break;
-            default:
-                return res.status(400).json({
-                    error: 'Invalid operation',
-                    message: `Cannot toggle quiz with status '${currentStatus}'`
-                });
-        }
-        return res.status(200).json({ message: 'Quiz status updated successfully' });
-    } catch (error) {
-        console.error('Error fetching quiz:', error);
-        return res.status(500).json({
-            error: 'Internal server error',
-            message: error.message
-        });
-    }
-});
-
-app.delete('/quizz/:id/delete', async (req, res) => {
-    try {
-        // check the user is authenticated
-        const tokenCookie = req.cookies.token;
-        if (!tokenCookie) {
-            return res.status(401).json({
-                error: 'Token manquant',
-                message: 'Aucun token d\'authentification fourni'
-            });
-        }
-
-        const token = JSON.parse(tokenCookie);
-        const decoded = await verifyToken(token);
-        if (!decoded) {
-            return res.status(401).json({
-                error: 'Token invalide',
-                message: 'Le token fourni est invalide'
-            });
-        }
-
-        const quizId = req.params.id;
-
-        // delete the quiz
-        const [result] = await sequelize.query(
-            'DELETE FROM quizzs WHERE id = :quizId AND ownerId = :ownerId',
-            {
-                replacements: { quizId, ownerId: decoded.userId }
-            }
-        );
-
-        if (result.affectedRows === 0) {
-            return res.status(404).json({
-                error: 'Not Found',
-                message: 'Quizz not found or you do not have permission to delete it'
-            });
-        }
-        return res.status(200).json({ message: 'Quiz deleted successfully' });
-    } catch (error) {
-        console.error('Error deleting quiz:', error);
-        return res.status(500).json({
-            error: 'Internal server error',
-            message: error.message
-        });
-    }
-});
-
-app.get('/quizzes/:id', async (req, res) => {
-    try {
-        const quizId = req.params.id;
-        const [quizRows] = await sequelize.query(
-            "SELECT * FROM quizzs WHERE id = :quizId AND status = 'actif' LIMIT 1",
-            {
-                replacements: { quizId }
-            }
-        );
-        if (!quizRows || quizRows.length === 0) {
-            return res.status(404).json({
-                error: 'Not Found',
-                message: 'Quizz not found'
-            });
-        }
-        const quiz = quizRows[0];
-        
-        // Parse questions if stored as string
-        let questions = typeof quiz.questions === 'string' 
-            ? JSON.parse(quiz.questions) 
-            : quiz.questions;
-        
-        // Remove answers from QCM questions
-        if (Array.isArray(questions)) {
-            questions = questions.map(q => {
-            if (q.type === 'qcm') {
-                const { answer, ...questionWithoutAnswer } = q;
-                return questionWithoutAnswer;
-            }
-            return q;
-            });
-        }
-        
-        quiz.questions = questions;
-        return res.status(200).json({ quiz });
-    } catch (error) {
-        console.error('Error fetching quiz:', error);
         return res.status(500).json({
             error: 'Internal server error',
             message: error.message
@@ -521,11 +357,19 @@ app.post('/quizzes', async (req, res) => {
         // Postgres / pg expects a JSON string for JSON columns — stringify it
         const questionsJson = JSON.stringify(questions);
 
-        const quizz = await createQuizz(name, questionsJson, ownerId);
+        const [result] = await sequelize.query(
+            // on force le cast en JSON côté SQL pour être sûr (:questions::json)
+            'INSERT INTO quizzs (name, questions, ownerId, status, createdAt, updatedAt) VALUES (:name, :questions, :ownerId, \'pending\', NOW(), NOW())',
+            { replacements: { name, questions: questionsJson, ownerId }}
+        );
+
+        // result[0] contient les rows retournées ; récupérer l'id en gardant la compatibilité
+        const insertedRows = result[0];
+        const insertedId = insertedRows?.id ?? null;
 
         return res.status(201).json({
             message: 'Quizz created successfully',
-            quizz
+            quizz: { id: insertedId, name, questions, ownerId }
         });
     } catch (error) {
         console.error('Error creating quizz:', error);
@@ -534,6 +378,41 @@ app.post('/quizzes', async (req, res) => {
             message: error.message
         });
     }
+});
+
+// Route pour récupérer un quiz
+app.get('/api/quizzes/:id', async (req, res) => {
+  try {
+    const quizId = req.params.id;
+    
+    // TODO: Récupérer le quiz depuis la base de données
+    // const quiz = await sequelize.query('SELECT * FROM quizzs WHERE id = ?', { replacements: [quizId] });
+    
+    // Pour la démo, retourner un quiz exemple
+    const quizExample = {
+      id: quizId,
+      name: 'Quiz Test',
+      questions: [
+        {
+          id: 1,
+          question: 'Quelle est la capitale de la France ?',
+          type: 'qcm',
+          choices: ['Paris', 'Lyon', 'Marseille']
+        },
+        {
+          id: 2,
+          question: 'Quel est ton nom ?',
+          type: 'libre',
+          choices: []
+        }
+      ]
+    };
+    
+    res.json(quizExample);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
 });
 
 // Gestionnaire d'erreurs global
