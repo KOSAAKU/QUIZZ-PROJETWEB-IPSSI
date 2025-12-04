@@ -39,7 +39,8 @@ User.init({
 }, {
     sequelize,
     modelName: "User",
-    tableName: "users"
+    tableName: "users",
+    timestamps: false
 });
 
 class Quizz extends Model {}; 
@@ -74,7 +75,8 @@ Quizz.init({
 }, {
     sequelize,
     modelName: "Quizz",
-    tableName: "quizz"
+    tableName: "quizz",
+    timestamps: false
 });
 
 class Reponses extends Model {}; 
@@ -104,5 +106,6 @@ Reponses.init({
 }, {
     sequelize,
     modelName: "Reponses",
-    tableName: "reponses"
+    tableName: "reponses",
+    timestamps: false
 });
