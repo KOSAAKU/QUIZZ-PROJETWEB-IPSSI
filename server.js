@@ -168,7 +168,11 @@ app.get('/quizz/create', async (req, res) => {
         return res.redirect('/login');
     }
 
-    return res.sendFile('public/create.html', { root: '.' });
+    if (user.role === 'ecole') {
+        return res.sendFile('public/create_quizz_ecole.html', { root: '.' });
+    } else if (user.role === 'entreprise') {
+        return res.sendFile('public/create_quizz_entreprise.html', { root: '.' });
+    }
 });
 
 app.get('/dashboard/quizz/:id', async (req, res) => {
@@ -421,7 +425,7 @@ app.get('/quizzes', async (req, res) => {
             }
         );
 
-        let formattedQuizzes = quizzes.map((quiz) => {
+        let formattedQuizzes = quizzes.map((quizz) => {
             return {
                 ...quizz,
                 questions: Array.isArray(quizz.questions) 
