@@ -29,6 +29,10 @@ Application web de création et de gestion de quiz avec authentification multi-r
 - Consultation de l'historique des quiz complétés
 - Visualisation des scores et résultats
 
+#### Anonyme
+- Participation aux quiz actifs sans authentification
+- Les réponses sont enregistrées avec userId = 0
+
 ### Génération de Quiz par IA
 - Intégration avec Google Gemini AI
 - Génération automatique de questions basées sur un thème
@@ -38,11 +42,18 @@ Application web de création et de gestion de quiz avec authentification multi-r
 ## Architecture technique
 
 ### Backend
-- **Framework**: Express.js
-- **Base de données**: MySQL avec Sequelize
+- **Framework**: Express.js (Modules ES6)
+- **Base de données**: MySQL avec Sequelize (requêtes SQL brutes)
 - **Authentification**: JWT + bcrypt
 - **Sessions**: express-session avec stockage en mémoire
 - **IA**: Google Generative AI (Gemini)
+- **Architecture**: MVC avec routes modulaires et middlewares personnalisés
+
+### Middlewares personnalisés
+- **auth.js** - Authentification JWT et vérification des rôles
+- **logger.js** - Journalisation des requêtes HTTP
+- **onlineUsers.js** - Suivi des utilisateurs connectés en temps réel
+- **accountCheck.js** - Vérification du statut actif des comptes utilisateurs
 
 ### Structure du projet
 
@@ -57,21 +68,37 @@ QUIZZ-PROJETWEB-IPSSI/
 │   ├── QuizzController.js   # CRUD quiz
 │   ├── GeminiController.js  # Intégration IA Gemini
 │   └── LoggerController.js  # Logs des requêtes
+├── middleware/
+│   ├── auth.js              # Middleware d'authentification
+│   ├── logger.js            # Middleware de logs
+│   ├── onlineUsers.js       # Suivi des utilisateurs en ligne
+│   └── accountCheck.js      # Vérification des comptes actifs
+├── routes/
+│   ├── auth.routes.js       # Routes d'authentification
+│   ├── dashboard.routes.js  # Routes des dashboards
+│   ├── pages.routes.js      # Routes des pages statiques
+│   ├── quiz.routes.js       # Routes des quiz
+│   ├── user.routes.js       # Routes utilisateurs
+│   └── admin.routes.js      # Routes administrateur
 ├── public/
+│   ├── index.html           # Page d'accueil
+│   ├── login.html           # Page de connexion
+│   ├── register.html        # Page d'inscription
+│   ├── logout.html          # Page de déconnexion
 │   ├── dashbadmin.html      # Dashboard administrateur
 │   ├── dashbecole.html      # Dashboard école
 │   ├── dashbentreprise.html # Dashboard entreprise
 │   ├── dashbuser.html       # Dashboard utilisateur
-│   ├── create_quizz_*.html  # Pages de création de quiz
+│   ├── create_quizz_ecole.html       # Création de quiz (école)
+│   ├── create_quizz_entreprise.html  # Création de quiz (entreprise)
 │   ├── quizz.html           # Interface de passage de quiz
 │   ├── quiz_participants.html # Liste des participants
 │   ├── quiz_answers.html    # Détail des réponses
-│   ├── login.html           # Page de connexion
-│   ├── register.html        # Page d'inscription
 │   └── suspended.html       # Page compte suspendu
 ├── server.js                # Point d'entrée de l'application
 ├── seed.js                  # Données de test
 ├── adminacc.js              # Création compte admin
+├── test-gemini.js           # Script de test de l'API Gemini
 └── package.json
 ```
 
@@ -100,17 +127,20 @@ npm install
 Créer un fichier `.env` à la racine du projet (voir `.env.example`):
 ```env
 DB_HOST=localhost
+DB_PORT=3306
 DB_USER=root
 DB_PASSWORD=votre_mot_de_passe
-DB_NAME=quizz_db
+DB_NAME=quizzeo
+
 JWT_SECRET=votre_secret_jwt
+
 GEMINI_API_KEY=votre_clé_api_gemini
 ```
 
 4. Créer la base de données
 ```bash
 mysql -u root -p
-CREATE DATABASE quizz_db;
+CREATE DATABASE quizzeo;
 ```
 
 5. Initialiser la base de données
@@ -122,7 +152,7 @@ Le serveur créera automatiquement les tables au démarrage grâce à Sequelize 
 npm start
 ```
 
-L'application sera accessible sur `http://localhost:3000`
+L'application sera accessible sur `http://localhost:3000` (écoute sur toutes les interfaces : `0.0.0.0:3000`)
 
 ## Utilisation
 
@@ -130,6 +160,24 @@ L'application sera accessible sur `http://localhost:3000`
 ```bash
 node adminacc.js
 ```
+
+### Tester l'intégration Gemini AI
+```bash
+node test-gemini.js
+```
+
+### Routes de navigation principales
+
+- `GET /` - Page d'accueil (index.html)
+- `GET /login` - Page de connexion
+- `GET /register` - Page d'inscription
+- `GET /logout` - Déconnexion et page de confirmation
+- `GET /dashboard` - Redirection automatique vers le dashboard selon le rôle
+- `GET /quizz/create` - Page de création de quiz (école/entreprise)
+- `GET /quizz/:id` - Page de passage d'un quiz
+- `GET /dashboard/quizz/:id` - Liste des participants d'un quiz (école/entreprise)
+- `GET /dashboard/quizz/:id/:answerId` - Détails des réponses d'un participant (école/entreprise)
+- `GET /suspended` - Page affichée aux comptes suspendus
 
 ### Endpoints API principaux
 
@@ -139,27 +187,29 @@ node adminacc.js
 - `GET /logout` - Déconnexion
 
 #### Utilisateurs
-- `GET /users` - Liste des utilisateurs (admin)
-- `POST /api/admin/users/:id/toggle` - Activer/désactiver un utilisateur (admin)
-- `GET /api/admin/online-users` - Utilisateurs connectés (admin)
+- `GET /users` - Liste des utilisateurs (authentifié)
+- `GET /api/user/my-quizzes` - Historique de mes quiz complétés (user)
 
-#### Quiz
-- `POST /api/quizzes` - Créer un quiz (école/entreprise)
-- `GET /quizzes` - Mes quiz (école/entreprise)
-- `GET /quizzes/:id` - Détails d'un quiz
-- `POST /quizzes/:id/submit` - Soumettre des réponses
-- `GET /quizz/:id/toggle` - Changer le statut d'un quiz
-- `DELETE /quizz/:id/delete` - Supprimer un quiz
-- `GET /api/quizzes/:id/participants` - Liste des participants
-- `GET /api/quizzes/:id/answers/:answerId` - Réponses d'un participant
+#### Quiz (préfixe `/quizz`)
+- `GET /quizz/quizzes` - Mes quiz créés (école/entreprise)
+- `GET /quizz/quizzes/:id` - Détails d'un quiz actif
+- `POST /quizz/api/quizzes` - Créer un quiz (école/entreprise)
+- `POST /quizz/quizzes/:id/submit` - Soumettre des réponses (authentifié ou anonyme)
+- `GET /quizz/:id/toggle` - Changer le statut d'un quiz (propriétaire)
+- `DELETE /quizz/:id/delete` - Supprimer un quiz (propriétaire)
+- `GET /quizz/api/quizzes/:id/participants` - Liste des participants (propriétaire)
+- `GET /quizz/api/quizzes/:id/answers/:answerId` - Détails des réponses d'un participant (propriétaire)
 
 #### IA
-- `POST /api/quizz/generate` - Générer des questions avec l'IA (école/entreprise)
+- `POST /quizz/api/quizz/generate` - Générer des questions avec l'IA Gemini (école/entreprise)
 
-#### Admin
-- `GET /api/admin/quizzes` - Tous les quiz (admin)
-- `DELETE /api/admin/quizzes/:id` - Supprimer un quiz (admin)
-- `POST /api/admin/quizzes/:id/toggle` - Changer le statut d'un quiz (admin)
+#### Administration
+- `GET /api/admin/users` - Tous les utilisateurs (admin)
+- `POST /api/admin/users/:id/toggle` - Activer/désactiver un utilisateur (admin)
+- `GET /api/admin/online-users` - Utilisateurs connectés en temps réel (admin)
+- `GET /api/admin/quizzes` - Tous les quiz de la plateforme (admin)
+- `DELETE /api/admin/quizzes/:id` - Supprimer n'importe quel quiz (admin)
+- `POST /api/admin/quizzes/:id/toggle` - Changer le statut de n'importe quel quiz (admin)
 
 ### Statuts des quiz
 - `pending` - Quiz créé mais non démarré
@@ -168,13 +218,15 @@ node adminacc.js
 
 ## Sécurité
 
-- Mots de passe hashés avec bcrypt
-- Authentification par tokens JWT
+- Mots de passe hashés avec bcrypt (salt rounds: 10)
+- Authentification par tokens JWT stockés dans des cookies HTTP-only
 - Cookies HTTP-only pour prévenir les attaques XSS
-- Validation des rôles sur toutes les routes protégées
+- Validation des rôles sur toutes les routes protégées (middleware requireRole)
 - Vérification des permissions (propriété des ressources)
-- Sessions utilisateur avec timeout d'inactivité (10 minutes)
+- Sessions utilisateur avec suivi en temps réel
+- Middleware de vérification du statut actif des comptes
 - Protection contre les opérations auto-destructrices (admin ne peut pas se désactiver)
+- Support de la participation anonyme aux quiz (sans authentification)
 
 ## Technologies utilisées
 
