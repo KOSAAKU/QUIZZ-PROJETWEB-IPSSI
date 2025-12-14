@@ -1,6 +1,6 @@
 # Quizz App - IPSSI Web Project
 
-Application web de création et de gestion de quiz avec authentification multi-rôles et génération automatique de questions par IA.
+Application web de création et de gestion de quiz avec authentification multi-rôles et génération automatique de questions par IA (gemini).
 
 ## Fonctionnalités
 
